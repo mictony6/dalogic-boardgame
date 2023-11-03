@@ -176,8 +176,10 @@ export class GameManager {
     };
 
     const animationDuration = 500; // Duration in milliseconds
+
     let elapsedTime = 0;
     const piece = this.selectedPiece;
+    const srcTile = this.board.getTile(piece.row, piece.col);
 
     // Linear interpolation function
     function lerp(start, end, t) {
@@ -188,6 +190,8 @@ export class GameManager {
       if (elapsedTime >= animationDuration) {
         piece.row = tile.row;
         piece.col = tile.col;
+        tile.occupied = true;
+        srcTile.occupied = false;
         this.deselectPiece();
         this.app.ticker.remove(moveFunction); // Remove the update listener
 

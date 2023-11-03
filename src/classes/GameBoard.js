@@ -34,12 +34,11 @@ export class GameBoard extends Container {
   isValidMove(src, dest) {
 
     //check if dest is in bounds
-    if (dest[0] < 0 || dest[0] >= this.rows-1 || dest[1] < 0 || dest[1] >= this.columns-1) return false;
+    if (dest[0] < 0 || dest[0] >= this.rows || dest[1] < 0 || dest[1] >= this.columns) return false;
 
     // get tiles from the board
-    let srcTile = this.getTile(src[0], src[1]);
     let destTile = this.getTile(dest[0], dest[1]);
-    this.tint = 0x00ff00;
+
 
 
     // check if dest tile is occupied
