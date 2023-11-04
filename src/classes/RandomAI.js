@@ -20,10 +20,6 @@ export class RandomAI extends Player{
     });
   }
 
-
-
-
-
   perform(manager){
     this.selectAIPiece(manager).then(piece => {
       console.log("Ai selected piece at ", [piece.row, piece.col]);
