@@ -1,6 +1,19 @@
-import {GameBoard} from "./GameBoard";
-import {Piece} from "./Piece";
-import {Player} from "./Player";
+import { GameBoard } from "./GameBoard";
+import { Piece } from "./Piece";
+import { Player } from "./Player";
+import { MoveValidator } from "./MoveValidator";
+import {RandomAI} from "./RandomAI";
+
+function createEnum(values) {
+  const enumObject = {};
+  let count = 0;
+  for (const val of values) {
+    enumObject[val] = count++;
+  }
+  return Object.freeze(enumObject);
+}
+const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
+
 
 export class GameManager {
   constructor(app, renderer) {
@@ -12,12 +25,31 @@ export class GameManager {
     this.selectedPiece = null;
     this.selectedTile = null;
     this.currentPlayer = null;
+    this.moveValidator = new MoveValidator(this.board);
+    this.gameMode = GameMode.PlayerVsAI;
+
   }
 
   start() {
     // Initialize your game here
     this.loadGame();
     this.app.ticker.add(this.updateAll.bind(this));
+  }
+
+  loadTiles() {
+    this.board.tiles.flat().forEach(tile => {
+      tile.on('pointerdown', () => {
+        if (!this.selectedPiece) return;
+
+        if (this.currentPlayer.validMoves.find(validMove => validMove[0] === tile.row && validMove[1] === tile.col)) {
+          this.switchPlayerTurn();
+          this.movePiece(tile);
+        } else {
+          this.deselectPiece();
+        }
+      });
+      tile.eventMode = "static";
+    });
   }
 
   loadPiecesForPlayer(player, startingRow) {
@@ -34,12 +66,21 @@ export class GameManager {
         this.selectPiece(piece);
       });
       piece.eventMode = "static";
+
+      player.ownedPieces.push(piece);
     }
   }
 
   loadGame() {
     let player1 = new Player("Player 1", 1, 0xff0000);
-    let player2 = new Player("Player 2", 2, 0x0000ff);
+    let player2 = null;
+    if (this.gameMode === GameMode.PlayerVsPlayer) {
+      player2 = new Player("Player 2", 2, 0x0000ff);
+
+    }else if (this.gameMode === GameMode.PlayerVsAI){
+      player2 = new RandomAI("Player 2", 2, 0x0000ff);
+    }
+
     this.players.push(player1);
     this.players.push(player2);
     this.currentPlayer = player1;
@@ -50,6 +91,7 @@ export class GameManager {
     this.loadPiecesForPlayer(player1, 6);
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
+    this.loadTiles();
   }
 
 
@@ -85,67 +127,45 @@ export class GameManager {
 
 
   update(delta) {
-    this.board.tiles.flat().forEach(tile => {
-      tile.on('pointerdown', () => {
-        if (!this.selectedPiece) return;
 
-        if (this.currentPlayer.validMoves.find(validMove => validMove[0] === tile.row && validMove[1] === tile.col)) {
-          this.movePiece(tile);
-        } else {
-          this.deselectPiece();
-        }
-      });
-      tile.eventMode = "static";
-    });
   }
 
 
-
-  updateAll(delta){
+  updateAll(delta) {
     this.update(delta);
+  }
+
+
+  getValidMoves(piece){
+    const moves = this.getAllMoves(piece);
+    return moves.filter(move => this.moveValidator.isValidMove([piece.row, piece.col], move))
+  }
+
+  getAllMoves(piece){
+    return [
+      [piece.row + 1, piece.col + 1],
+      [piece.row + 1, piece.col - 1],
+      [piece.row - 1, piece.col + 1],
+      [piece.row - 1, piece.col - 1]
+    ]
   }
 
   showValidMoves() {
     let piece = this.selectedPiece;
-    let validMoves = []
-    let row = piece.row;
-    let col = piece.col;
 
     // Reset the tint for all tiles
     this.resetTileTints();
 
-    // All diagonal moves
-    const moveOffsets = [
-      [1, 1],
-      [1, -1],
-      [-1, 1],
-      [-1, -1]
-    ];
-
-    // Find which moves can be valid and apply tint to valid tiles
-    moveOffsets.forEach(offset => {
-      let move = [row + offset[0], col + offset[1]];
-      if (this.board.isValidMove([piece.row, piece.col], move)) {
-        validMoves.push(move);
-        let tile = this.board.getTile(move[0], move[1]);
-        tile.tint = 0x00ff00; // Apply tint to valid tiles
-      }
+    this.currentPlayer.validMoves = this.getValidMoves(piece);
+    this.currentPlayer.validMoves.forEach(move => {
+      let tile = this.board.getTile(move[0], move[1]);
+      tile.tint = 0x00ff00; // Apply tint to valid tiles
     });
 
-    this.currentPlayer.validMoves = validMoves;
   }
 
-  // This is the old move function which does not include having the piece animated
-  // movePiece(tile) {
-  //   this.selectedPiece.col = tile.col;
-  //   this.selectedPiece.row = tile.row;
-  //   this.switchPlayerTurn();
-  //   this.deselectPiece();
-  //
-  // }
 
   movePiece(tile) {
-    this.switchPlayerTurn();
 
     const destination = {
       x: tile.x + this.board.x,
@@ -157,7 +177,7 @@ export class GameManager {
       y: this.selectedPiece.y,
     };
 
-    const animationDuration = 500; // Duration in milliseconds
+    const animationDuration = 250; // Duration in milliseconds
 
     let elapsedTime = 0;
     const piece = this.selectedPiece;
@@ -168,7 +188,7 @@ export class GameManager {
       return start + t * (end - start);
     }
     const moveFunction = (delta) => {
-      elapsedTime += (delta/60) * 1000;
+      elapsedTime += (delta / 60) * 1000;
       if (elapsedTime >= animationDuration) {
         piece.row = tile.row;
         piece.col = tile.col;
@@ -183,16 +203,19 @@ export class GameManager {
         piece.y = lerp(startingPosition.y, destination.y, t);
       }
     };
+      this.app.ticker.add(moveFunction);
 
-    this.app.ticker.add(moveFunction);
   }
 
 
-  switchPlayerTurn(){
-    if (this.currentPlayer === this.players[0]){
-      this.currentPlayer = this.players[1];
-    } else {
-      this.currentPlayer = this.players[0];
+  switchPlayerTurn() {
+    this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
+    if (this.currentPlayer instanceof RandomAI){
+      this.currentPlayer.perform(this);
     }
   }
+
+
+
+
 }

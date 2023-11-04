@@ -5,6 +5,9 @@ export class Player{
     this.color =color;
     this.validMoves = [];
     this.movesHistory = [];
+    this.ownedPieces = [];
+
+
 
   }
 
@@ -15,4 +18,7 @@ export class Player{
   undoMove(){
     return this.movesHistory.pop();
   }
+
+
+
 }

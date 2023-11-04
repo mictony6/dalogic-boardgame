@@ -18,6 +18,7 @@ export class Tile extends Sprite {
     this.interactive = true; // Enable interaction
 
     this.occupied = false;
+    this.piece = null;
   }
 
   set col(val){
@@ -43,6 +44,8 @@ export class Tile extends Sprite {
   get isWhite(){
     return !this.isBlack
   }
+
+
 
 
 }

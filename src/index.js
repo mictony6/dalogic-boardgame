@@ -12,6 +12,8 @@ const app = new PIXI.Application({
   antialias: true,
 });
 
+globalThis.__PIXI_APP__ = app;
+
 app.renderer.view.style.position = 'absolute';
 document.body.appendChild(app.view);
 

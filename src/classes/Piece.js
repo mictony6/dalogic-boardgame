@@ -50,12 +50,14 @@ export class Piece extends Sprite{
 
   occupyTile(tile){
     tile.occupied = true;
+    tile.piece = this;
     this.tile = tile;
   }
 
   leaveCurrentTile(){
     if (this.tile){
       this.tile.occupied = false
+      this.tile.piece = null
       this.tile = null;
     }
   }
