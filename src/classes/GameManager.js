@@ -12,10 +12,6 @@ export class GameManager {
     this.selectedPiece = null;
     this.selectedTile = null;
     this.currentPlayer = null;
-
-
-
-
   }
 
   start() {
@@ -24,51 +20,38 @@ export class GameManager {
     this.app.ticker.add(this.updateAll.bind(this));
   }
 
-  loadGame(){
+  loadPiecesForPlayer(player, startingRow) {
+    for (let col = 0; col < this.board.columns; col++) {
+      const tile = this.board.getTile(startingRow, col);
+      if (tile.isBlack) continue;
+      let piece = new Piece(startingRow, col, 64, this.app);
+      piece.assignPlayer(player);
+      piece.occupyTile(tile);
+      this.pieces.push(piece);
+      this.renderer.addElement(piece);
 
+      piece.on('pointerdown', () => {
+        this.selectPiece(piece);
+      });
+      piece.eventMode = "static";
+    }
+  }
+
+  loadGame() {
     let player1 = new Player("Player 1", 1, 0xff0000);
     let player2 = new Player("Player 2", 2, 0x0000ff);
     this.players.push(player1);
     this.players.push(player2);
-
     this.currentPlayer = player1;
 
     this.renderer.addElement(this.board);
-    for (let col = 0; col < this.board.columns; col++){
-      const tile = this.board.getTile(7, col);
-      if (tile.isBlack) continue;
-      let piece = new Piece(7, col, 64, this.app);
-      tile.occupied = true;
 
-      piece.assignPlayer(player1);
-      this.pieces.push(piece);
-      this.renderer.addElement(piece);
-
-      piece.on('pointerdown', () => {
-        this.selectPiece(piece);
-
-      });
-      piece.eventMode = "static"
-    }
-
-    for (let col = 0; col < this.board.columns; col++){
-      const tile = this.board.getTile(0, col);
-      if (tile.isBlack) continue;
-      let piece = new Piece(0, col, 64, this.app);
-      tile.occupied = true;
-
-      piece.assignPlayer(player2);
-      this.pieces.push(piece);
-      this.renderer.addElement(piece);
-
-      piece.on('pointerdown', () => {
-        this.selectPiece(piece);
-
-      });
-      piece.eventMode = "static"
-    }
-
+    this.loadPiecesForPlayer(player1, 7);
+    this.loadPiecesForPlayer(player1, 6);
+    this.loadPiecesForPlayer(player2, 0);
+    this.loadPiecesForPlayer(player2, 1);
   }
+
 
 
   selectPiece(piece) {
@@ -118,7 +101,6 @@ export class GameManager {
 
 
 
-
   updateAll(delta){
     this.update(delta);
   }
@@ -153,7 +135,7 @@ export class GameManager {
     this.currentPlayer.validMoves = validMoves;
   }
 
-
+  // This is the old move function which does not include having the piece animated
   // movePiece(tile) {
   //   this.selectedPiece.col = tile.col;
   //   this.selectedPiece.row = tile.row;
@@ -190,8 +172,8 @@ export class GameManager {
       if (elapsedTime >= animationDuration) {
         piece.row = tile.row;
         piece.col = tile.col;
-        tile.occupied = true;
-        srcTile.occupied = false;
+        piece.leaveCurrentTile();
+        piece.occupyTile(tile);
         this.deselectPiece();
         this.app.ticker.remove(moveFunction); // Remove the update listener
 
@@ -204,8 +186,6 @@ export class GameManager {
 
     this.app.ticker.add(moveFunction);
   }
-
-
 
 
   switchPlayerTurn(){

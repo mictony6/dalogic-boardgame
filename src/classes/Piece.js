@@ -20,6 +20,7 @@ export class Piece extends Sprite{
     this._col = col;
     this.tileSize = tileSize;
     this.app = app;
+    this.tile = null;
 
 
   }
@@ -47,6 +48,17 @@ export class Piece extends Sprite{
     return this._row;
   }
 
+  occupyTile(tile){
+    tile.occupied = true;
+    this.tile = tile;
+  }
+
+  leaveCurrentTile(){
+    if (this.tile){
+      this.tile.occupied = false
+      this.tile = null;
+    }
+  }
 
 
 }
