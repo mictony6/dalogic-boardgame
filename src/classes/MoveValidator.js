@@ -11,11 +11,10 @@ export class MoveValidator {
 
   /**
    *
-   * @param src {Array}
    * @param dest {Array}
    * @returns {boolean}
    */
-  isValidMove(src, dest) {
+  isValidMove( dest) {
 
     //check if dest is in bounds
     if (dest[0] < 0 || dest[0] >= this.board.rows || dest[1] < 0 || dest[1] >= this.board.columns) return false;

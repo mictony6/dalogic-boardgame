@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import './style.css';
-import sample from "./images/sample.png";
 import {GameManager} from "./classes/GameManager";
 import {GameRenderer} from "./classes/GameRenderer";
 

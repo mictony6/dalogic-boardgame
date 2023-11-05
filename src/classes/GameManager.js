@@ -104,14 +104,16 @@ export class GameManager {
     this.loadTiles();
   }
 
-
-
+  /**
+   * Selects a piece and highlights its valid moves
+   * @param piece { Piece}
+   */
   selectPiece(piece) {
     if (piece.player !== this.currentPlayer) {
       console.log("not yours")
       this.resetTileTints();
       return;
-    };
+    }
 
     this.deselectPiece(); // Deselect any previously selected piece and clear its valid moves
 
@@ -136,9 +138,7 @@ export class GameManager {
 
 
 
-  update(delta) {
-
-  }
+  update(delta) {}
 
 
   updateAll(delta) {
@@ -148,9 +148,14 @@ export class GameManager {
 
   getValidMoves(piece){
     const moves = this.getAllMoves(piece);
-    return moves.filter(move => this.moveValidator.isValidMove([piece.row, piece.col], move))
+    return moves.filter(move => this.moveValidator.isValidMove( move))
   }
 
+  /**
+   * Returns all possible diagonal moves for a piece. Does not check if the move is valid.
+   * @param piece {Piece}
+   * @returns {(*[]|(*|number)[]|(number|*)[]|number[])[]}
+   */
   getAllMoves(piece){
     return [
       [piece.row + 1, piece.col + 1],
@@ -160,6 +165,9 @@ export class GameManager {
     ]
   }
 
+  /**
+   * Highlights all valid moves for a piece
+   */
   showValidMoves() {
     let piece = this.selectedPiece;
 
@@ -217,7 +225,9 @@ export class GameManager {
 
   }
 
-
+  /**
+   * Switches the current player
+   */
   switchPlayerTurn() {
     this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
     if (this.currentPlayer instanceof RandomAI){
