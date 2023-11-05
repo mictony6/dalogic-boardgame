@@ -26,13 +26,17 @@ export class GameManager {
     this.selectedTile = null;
     this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.PlayerVsAI;
+    this.gameMode = GameMode.AIVsAI;
 
   }
 
   start() {
     // Initialize your game here
     this.loadGame();
+    // run the first move if currentPlayer is AI
+    if (this.currentPlayer instanceof RandomAI){
+      this.currentPlayer.perform(this);
+    }
     this.app.ticker.add(this.updateAll.bind(this));
   }
 
@@ -72,13 +76,19 @@ export class GameManager {
   }
 
   loadGame() {
-    let player1 = new Player("Player 1", 1, 0xff0000);
+    let player1 = null;
     let player2 = null;
     if (this.gameMode === GameMode.PlayerVsPlayer) {
+      player1 = new Player("Player 1", 1, 0xff0000);
       player2 = new Player("Player 2", 2, 0x0000ff);
 
     }else if (this.gameMode === GameMode.PlayerVsAI){
+      player1 = new Player("Player 1", 1, 0xff0000);
       player2 = new RandomAI("Player 2", 2, 0x0000ff);
+    } else if (this.gameMode === GameMode.AIVsAI){
+      player1 = new RandomAI("Player 1", 1, 0xff0000);
+      player2 = new RandomAI("Player 2", 2, 0x0000ff);
+
     }
 
     this.players.push(player1);
