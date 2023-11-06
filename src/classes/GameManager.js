@@ -47,7 +47,7 @@ export class GameManager {
 
         // if (this.currentPlayer.validMoves.find(validMove => validMove.desTile === tile)) {
         //   this.switchPlayerTurn();
-        //   this.movePiece(tile);
+        //   this.executeMove(tile);
         // } else {
         //   this.deselectPiece();
         // }
@@ -57,7 +57,7 @@ export class GameManager {
         for (let i = 0; i < this.currentPlayer.validMoves.length; i++){
           if (this.currentPlayer.validMoves[i].desTile === tile){
             this.switchPlayerTurn();
-            this.movePiece(this.currentPlayer.validMoves[i]);
+            this.executeMove(this.currentPlayer.validMoves[i]);
             isInValidMoves = true;
             break;
           }
@@ -204,10 +204,10 @@ export class GameManager {
 
 
   /**
-   * Moves a piece
+   * Executes a move and animates the piece. Note: This does not check if the move is valid.
    * @param move {Move}
    */
-  movePiece(move) {
+  executeMove(move) {
 
     const tile = move.desTile;
 

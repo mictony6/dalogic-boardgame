@@ -20,6 +20,9 @@ export class RandomAI extends Player{
     });
   }
 
+  /**
+   * @param {GameManager} manager
+   */
   perform(manager){
     this.selectAIPiece(manager).then(piece => {
       console.log("Ai selected piece ", piece);
@@ -27,7 +30,7 @@ export class RandomAI extends Player{
       let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
       console.log("Ai moved piece to ", randomMove);
       manager.switchPlayerTurn();
-      manager.movePiece(randomMove);
+      manager.executeMove(randomMove);
     });
 
   }

@@ -44,14 +44,9 @@ export class MoveValidator {
     return true;
   }
 
-  /**
-   *
-   * @param dest {Array} [row, col]
-   * @param  capturingPiece {Piece}
-   * @returns
-   */
-  isCapturingMove(dest, capturingPiece) {
-    const destTile = this.board.getTile(dest[0], dest[1]);
+
+  isCapturingMove(move) {
+    const destTile = move.desTile;
     if (!destTile.occupied) {
       return false;
     }
