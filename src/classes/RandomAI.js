@@ -22,13 +22,12 @@ export class RandomAI extends Player{
 
   perform(manager){
     this.selectAIPiece(manager).then(piece => {
-      console.log("Ai selected piece at ", [piece.row, piece.col]);
+      console.log("Ai selected piece ", piece);
       manager.selectPiece(piece);
-      this.randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
-      console.log("Ai moved piece to ", this.randomMove);
-      this.destTile = manager.board.getTile(this.randomMove[0], this.randomMove[1]);
+      let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
+      console.log("Ai moved piece to ", randomMove);
       manager.switchPlayerTurn();
-      manager.movePiece(this.destTile);
+      manager.movePiece(randomMove);
     });
 
   }

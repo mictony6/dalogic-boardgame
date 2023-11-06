@@ -9,30 +9,45 @@ export class MoveValidator {
   }
 
 
+  // /**
+  //  *
+  //  * @param dest {Array}
+  //  * @returns {boolean}
+  //  */
+  // isValidMove( dest) {
+  //
+  //   //check if dest is in bounds
+  //   if (dest[0] < 0 || dest[0] >= this.board.rows || dest[1] < 0 || dest[1] >= this.board.columns) return false;
+  //
+  //   let destTile = this.board.getTile(dest[0], dest[1]);
+  //
+  //   // check if dest tile is occupied
+  //   if (destTile.occupied) return false;
+  //
+  //
+  //   return true;
+  //
+  // }
+
   /**
    *
-   * @param dest {Array}
-   * @returns {boolean}
+   * @param move {Move}
    */
-  isValidMove( dest) {
-
+  isValidMove(move){
     //check if dest is in bounds
-    if (dest[0] < 0 || dest[0] >= this.board.rows || dest[1] < 0 || dest[1] >= this.board.columns) return false;
-
-    let destTile = this.board.getTile(dest[0], dest[1]);
+    if (!move.inBounds) return false;
 
     // check if dest tile is occupied
-    if (destTile.occupied) return false;
+    if (move.desTile.occupied) return false;
 
 
     return true;
-
   }
 
   /**
    *
    * @param dest {Array} [row, col]
-   * @param  capturingPiece {Player}
+   * @param  capturingPiece {Piece}
    * @returns
    */
   isCapturingMove(dest, capturingPiece) {

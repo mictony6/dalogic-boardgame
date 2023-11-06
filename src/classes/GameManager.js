@@ -45,12 +45,29 @@ export class GameManager {
       tile.on('pointerdown', () => {
         if (!this.selectedPiece) return;
 
-        if (this.currentPlayer.validMoves.find(validMove => validMove[0] === tile.row && validMove[1] === tile.col)) {
-          this.switchPlayerTurn();
-          this.movePiece(tile);
-        } else {
+        // if (this.currentPlayer.validMoves.find(validMove => validMove.desTile === tile)) {
+        //   this.switchPlayerTurn();
+        //   this.movePiece(tile);
+        // } else {
+        //   this.deselectPiece();
+        // }
+        let isInValidMoves = false;
+
+
+        for (let i = 0; i < this.currentPlayer.validMoves.length; i++){
+          if (this.currentPlayer.validMoves[i].desTile === tile){
+            this.switchPlayerTurn();
+            this.movePiece(this.currentPlayer.validMoves[i]);
+            isInValidMoves = true;
+            break;
+          }
+        }
+        if (!isInValidMoves) {
           this.deselectPiece();
         }
+
+
+
       });
       tile.eventMode = "static";
     });
@@ -146,6 +163,7 @@ export class GameManager {
   }
 
 
+
   getValidMoves(piece){
     const moves = this.getAllMoves(piece);
     return moves.filter(move => this.moveValidator.isValidMove( move))
@@ -154,15 +172,17 @@ export class GameManager {
   /**
    * Returns all possible diagonal moves for a piece. Does not check if the move is valid.
    * @param piece {Piece}
-   * @returns {(*[]|(*|number)[]|(number|*)[]|number[])[]}
+   * @returns {Array<Move>}
    */
   getAllMoves(piece){
     return [
-      [piece.row + 1, piece.col + 1],
-      [piece.row + 1, piece.col - 1],
-      [piece.row - 1, piece.col + 1],
-      [piece.row - 1, piece.col - 1]
+      this.board.createMove(piece, [piece.row + 1, piece.col + 1]),
+      this.board.createMove(piece, [piece.row + 1, piece.col - 1]),
+      this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
+      this.board.createMove(piece, [piece.row - 1, piece.col - 1])
     ]
+
+
   }
 
   /**
@@ -176,14 +196,20 @@ export class GameManager {
 
     this.currentPlayer.validMoves = this.getValidMoves(piece);
     this.currentPlayer.validMoves.forEach(move => {
-      let tile = this.board.getTile(move[0], move[1]);
+      let tile = move.desTile;
       tile.tint = 0x00ff00; // Apply tint to valid tiles
     });
 
   }
 
 
-  movePiece(tile) {
+  /**
+   * Moves a piece
+   * @param move {Move}
+   */
+  movePiece(move) {
+
+    const tile = move.desTile;
 
     const destination = {
       x: tile.x + this.board.x,

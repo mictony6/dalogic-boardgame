@@ -1,5 +1,6 @@
 import {Tile} from "./Tile";
 import {Container} from "pixi.js";
+import {Move} from "./Move";
 
 export class GameBoard extends Container {
   constructor(rows, columns, tileSize, app) {
@@ -29,6 +30,20 @@ export class GameBoard extends Container {
 
   getTile(row, col){
     return this.tiles[row][col];
+  }
+
+  createMove(piece, dest){
+
+    let move = new Move(piece, dest);
+
+    if (dest[0] < 0 || dest[0] >= this.rows || dest[1] < 0 || dest[1] >= this.columns) {
+      move.inBounds = false;
+    }else {
+      move.desTile = this.getTile(dest[0], dest[1]);
+    }
+
+    // check if dest is in bounds
+    return move;
   }
 
 }
