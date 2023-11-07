@@ -15,9 +15,13 @@ export class Tile extends Sprite {
     this.col = col;
     this.isBlack = isBlack;
 
-    this.interactive = true; // Enable interaction
+    this.eventMode = "static"
 
     this.occupied = false;
+    /**
+     *
+     * @type {Piece}
+     */
     this.piece = null;
   }
 
@@ -43,6 +47,16 @@ export class Tile extends Sprite {
 
   get isWhite(){
     return !this.isBlack
+  }
+
+  setPiece(piece){
+    this.piece =piece;
+    this.occupied = true;
+  }
+
+  removeCurrentPiece(){
+    this.piece = null;
+    this.occupied = false;
   }
 
 

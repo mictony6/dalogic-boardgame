@@ -16,7 +16,7 @@ export class RandomAI extends Player{
           piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
         }
         resolve(piece);
-      }, 1000 );
+      }, 300 );
     });
   }
 
@@ -24,11 +24,14 @@ export class RandomAI extends Player{
    * @param {GameManager} manager
    */
   perform(manager){
-    this.selectAIPiece(manager).then(piece => {
-      console.log("Ai selected piece ", piece);
+    this.selectAIPiece(manager  ).then(piece => {
       manager.selectPiece(piece);
       let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
-      console.log("Ai moved piece to ", randomMove);
+      if (randomMove.canCapture()){
+        manager.selectPiece(randomMove.desTile.piece);
+        return;
+      }
+      console.log(manager.currentPlayer.name, manager.currentPlayer.numberOfActivePieces())
       manager.switchPlayerTurn();
       manager.executeMove(randomMove);
     });

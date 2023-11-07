@@ -22,8 +22,20 @@ export class GameManager {
     this.board = new GameBoard(8, 8, 64, this.app)
     this.pieces = []
     this.players = []
+    /**
+     *
+     * @type {Piece}
+     */
     this.selectedPiece = null;
+    /**
+     *
+     * @type {Tile}
+     */
     this.selectedTile = null;
+    /**
+     *
+     * @type {Player}
+     */
     this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
     this.gameMode = GameMode.AIVsAI;
@@ -44,20 +56,12 @@ export class GameManager {
     this.board.tiles.flat().forEach(tile => {
       tile.on('pointerdown', () => {
         if (!this.selectedPiece) return;
-
-        // if (this.currentPlayer.validMoves.find(validMove => validMove.desTile === tile)) {
-        //   this.switchPlayerTurn();
-        //   this.executeMove(tile);
-        // } else {
-        //   this.deselectPiece();
-        // }
         let isInValidMoves = false;
-
-
         for (let i = 0; i < this.currentPlayer.validMoves.length; i++){
-          if (this.currentPlayer.validMoves[i].desTile === tile){
+          let move = this.currentPlayer.validMoves[i];
+          if (move.desTile === tile){
             this.switchPlayerTurn();
-            this.executeMove(this.currentPlayer.validMoves[i]);
+            this.executeMove(move);
             isInValidMoves = true;
             break;
           }
@@ -65,9 +69,6 @@ export class GameManager {
         if (!isInValidMoves) {
           this.deselectPiece();
         }
-
-
-
       });
       tile.eventMode = "static";
     });
@@ -80,6 +81,8 @@ export class GameManager {
       let piece = new Piece(startingRow, col, 64, this.app);
       piece.assignPlayer(player);
       piece.occupyTile(tile);
+
+
       this.pieces.push(piece);
       this.renderer.addElement(piece);
 
@@ -122,18 +125,46 @@ export class GameManager {
   }
 
   /**
-   * Selects a piece and highlights its valid moves
+   *
+   * @param capturingPiece {Piece}
+   * @param targetPiece {Piece}
+   * @return Boolean
+   */
+  performCapture(capturingPiece, targetPiece){
+    if (targetPiece.player === capturingPiece.player){
+      console.log("cant capture your own pieces")
+      return false;
+    }
+
+    targetPiece.eventMode = 'none';
+    targetPiece.tile.removeCurrentPiece();
+    targetPiece.tile.setPiece(capturingPiece);
+
+    targetPiece.player.ownedPieces = targetPiece.player.ownedPieces.filter(piece => targetPiece !== piece)
+
+    this.switchPlayerTurn();
+    this.executeMove(this.board.createMove(capturingPiece, [targetPiece.row, targetPiece.col]));
+    this.renderer.removeElement(targetPiece);
+    return true;
+  }
+
+  /**
+   * Gets called when player selects a piece and highlights its valid moves
    * @param piece { Piece}
    */
   selectPiece(piece) {
     if (piece.player !== this.currentPlayer) {
-      console.log("not yours")
-      this.resetTileTints();
+
+      if (!this.performCapture(this.selectedPiece, piece)){
+
+        this.resetTileTints();
+      }
       return;
     }
 
     this.deselectPiece(); // Deselect any previously selected piece and clear its valid moves
 
+    // finally setting piece as selectedPiece
     this.selectedPiece = piece;
     this.showValidMoves();
   }

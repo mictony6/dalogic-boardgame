@@ -3,6 +3,10 @@ export class Player{
     this.name = name;
     this.id = id;
     this.color =color;
+    /**
+     *
+     * @type {Array<Move>}
+     */
     this.validMoves = [];
     this.movesHistory = [];
     this.ownedPieces = [];
@@ -17,6 +21,10 @@ export class Player{
 
   undoMove(){
     return this.movesHistory.pop();
+  }
+
+  numberOfActivePieces(){
+    return this.ownedPieces.length
   }
 
 

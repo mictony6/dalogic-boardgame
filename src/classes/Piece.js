@@ -1,6 +1,10 @@
-import {Graphics, Sprite} from "pixi.js";
+import {Graphics, Sprite, Text} from "pixi.js";
 
 export class Piece extends Sprite{
+  /**
+   *
+   * @type {Player}
+   */
   player = null;
   constructor(row, col, tileSize,  app){
 
@@ -20,9 +24,27 @@ export class Piece extends Sprite{
     this._col = col;
     this.tileSize = tileSize;
     this.app = app;
+    /**
+     *
+     * @type {Tile}
+     */
     this.tile = null;
+    this._pieceValue = 0;
+    this.eventMode = 'static'
 
 
+  }
+
+  get pieceValue(){
+    return this._pieceValue;
+  }
+
+  get binRep(){
+    return this._pieceValue.toString(2);
+  }
+
+  set pieceValue(val){
+    this._pieceValue = val;
   }
 
   assignPlayer(player){
@@ -48,18 +70,36 @@ export class Piece extends Sprite{
     return this._row;
   }
 
+  /**
+   *
+   * @param tile {Tile}
+   */
   occupyTile(tile){
-    tile.occupied = true;
-    tile.piece = this;
+    tile.setPiece(this);
     this.tile = tile;
   }
 
+
   leaveCurrentTile(){
     if (this.tile){
-      this.tile.occupied = false
-      this.tile.piece = null
+      this.tile.removeCurrentPiece();
       this.tile = null;
     }
+  }
+
+  /**
+   *
+   * @param piece {Piece}
+   * @return Boolean
+   */
+  capture(piece){
+    if (piece.player === this.player){
+      console.log("cant capture your own pieces")
+      return false;
+    }
+
+    piece.eventMode = 'none';
+    return true;
   }
 
 

@@ -37,22 +37,25 @@ export class MoveValidator {
     //check if dest is in bounds
     if (!move.inBounds) return false;
 
-    // check if dest tile is occupied
-    if (move.desTile.occupied) return false;
 
-
-    return true;
-  }
-
-
-  isCapturingMove(move) {
-    const destTile = move.desTile;
-    if (!destTile.occupied) {
-      return false;
+    if (this.isCapturingMove(move)){
+      return true;
     }
 
-    const destPiece = destTile.piece;
-    return destPiece.player !== capturingPiece.player;
+    // check if dest tile is occupied
+    return move.canMove();
+
+
+
+
+  }
+
+  /**
+   *
+   * @param move {Move}
+   */
+  isCapturingMove(move) {
+    return move.canCapture();
   }
 
 }

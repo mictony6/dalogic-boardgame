@@ -8,5 +8,13 @@ export class Move{
 
   }
 
+  canCapture(){
+    return this.desTile.occupied && this.desTile.piece.player !== this.piece.player;
+  }
+
+  canMove(){
+    return !this.desTile.occupied;
+  }
+
 
 }
