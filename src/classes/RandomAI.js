@@ -26,8 +26,8 @@ export class RandomAI extends Player{
     });
   }
 
-  selectAITile(manager){
-    return new Promise((resolve, reject) => {
+  selectAITile(){
+    return new Promise((resolve) => {
       setTimeout(() => {
         let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
         resolve(randomMove);
@@ -40,7 +40,7 @@ export class RandomAI extends Player{
    */
   async perform(manager) {
     try {
-      const piece = await this.selectAIPiece(manager)
+      const piece = await this.selectAIPiece()
       manager.selectPiece(piece);
       const randomMove = await this.selectAITile(manager);
       manager.selectTile(randomMove.destTile);

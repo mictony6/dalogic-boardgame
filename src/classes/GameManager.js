@@ -3,7 +3,6 @@ import { Piece } from "./Piece";
 import { Player } from "./Player";
 import { MoveValidator } from "./MoveValidator";
 import {RandomAI} from "./RandomAI";
-import {log} from "debug";
 
 function createEnum(values) {
   const enumObject = {};
@@ -370,7 +369,7 @@ export class GameManager {
     if (this.currentPlayer instanceof RandomAI){
       this.board.disableTiles();
       this.currentPlayer.disable();
-      this.currentPlayer.perform(this).then(r => {})
+      this.currentPlayer.perform(this).then(() => {})
     }else{
       // set the current players pieces eventMode to static
       this.board.enableTiles();
