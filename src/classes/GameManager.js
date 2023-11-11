@@ -183,14 +183,14 @@ export class GameManager {
     // }
 
     targetPiece.eventMode = 'none';
-    targetPiece.tile.removeCurrentPiece();
+    capturingPiece.leaveCurrentTile()
 
     targetPiece.player.ownedPieces = targetPiece.player.ownedPieces.filter(piece => targetPiece !== piece)
 
     this.switchPlayerTurn();
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
-    move.destTile.setPiece(capturingPiece);
+    capturingPiece.occupyTile(move.destTile);
     this.executeMove(move);
     this.renderer.removeElement(targetPiece);
     return true;
