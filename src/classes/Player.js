@@ -53,6 +53,14 @@ export class Player{
     })
   }
 
+  /**
+   *
+   * @param capturedPiece {Piece}
+   */
+  freePiece(capturedPiece){
+    this.ownedPieces = this.ownedPieces.filter(piece => piece !== capturedPiece);
+  }
+
 
 
 

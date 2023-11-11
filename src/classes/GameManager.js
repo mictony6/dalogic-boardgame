@@ -3,6 +3,7 @@ import { Piece } from "./Piece";
 import { Player } from "./Player";
 import { MoveValidator } from "./MoveValidator";
 import {RandomAI} from "./RandomAI";
+import {log} from "debug";
 
 function createEnum(values) {
   const enumObject = {};
@@ -38,17 +39,13 @@ export class GameManager {
      */
     this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.PlayerVsPlayer;
+    this.gameMode = GameMode.AIVsAI;
 
   }
 
   start() {
     // Initialize your game here
     this.loadGame();
-    // run the first move if currentPlayer is AI
-    if (this.currentPlayer instanceof RandomAI){
-      this.currentPlayer.perform(this);
-    }
     this.app.ticker.add(this.updateAll.bind(this));
   }
 
@@ -57,7 +54,6 @@ export class GameManager {
       tile.on('pointerdown', () => {
         this.selectTile(tile);
       });
-      tile.eventMode = "static";
     });
   }
 
@@ -66,7 +62,10 @@ export class GameManager {
    * @param tile {Tile}
    */
   selectTile(tile) {
-    if (!this.selectedPiece) return;
+    if (!this.selectedPiece) {
+
+      throw Error("No piece selected")
+    }
 
 
     let isInValidMoves = false;
@@ -76,11 +75,7 @@ export class GameManager {
         if (move.isCaptureMove){
           this.performCapture(move);
           this.resetTileTints();
-          break;
-        }
-
-        if (tile.occupied && tile.piece.player !== this.currentPlayer) {
-          this.resetTileTints();
+          isInValidMoves = true;
           break;
         }
 
@@ -176,21 +171,24 @@ export class GameManager {
      */
     let targetPiece = move.destTile.piece;
 
-    // if (!targetPiece || !capturingPiece) return false;
-    // if (targetPiece.player === capturingPiece.player){
-    //   console.log("cant capture your own pieces")
-    //   return false;
-    // }
-
+    // disable target piece's input detection
     targetPiece.eventMode = 'none';
-    capturingPiece.leaveCurrentTile()
 
-    targetPiece.player.ownedPieces = targetPiece.player.ownedPieces.filter(piece => targetPiece !== piece)
+
+    // remove target piece from players owned piece set
+    targetPiece.player.freePiece(targetPiece);
+
+    // free tile from target piece
+    targetPiece.leaveCurrentTile();
 
     this.switchPlayerTurn();
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+
+    // update capturing piece and its corresponding tile locations
+    capturingPiece.leaveCurrentTile()
     capturingPiece.occupyTile(move.destTile);
+
     this.executeMove(move);
     this.renderer.removeElement(targetPiece);
     return true;
@@ -201,7 +199,6 @@ export class GameManager {
    * @param piece { Piece}
    */
   selectPiece(piece) {
-    console.log("Piece selected", piece)
     if (piece.player !== this.currentPlayer) {
 
 
@@ -337,7 +334,6 @@ export class GameManager {
 
     let elapsedTime = 0;
     const piece = this.selectedPiece;
-    const srcTile = this.board.getTile(piece.row, piece.col);
 
     // Linear interpolation function
     function lerp(start, end, t) {
@@ -371,10 +367,15 @@ export class GameManager {
     this.currentPlayer.disable()
     // set current player to the other player
     this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
-    // set the current players pieces eventMode to static
-    this.currentPlayer.enable()
     if (this.currentPlayer instanceof RandomAI){
-      this.currentPlayer.perform(this);
+      this.board.disableTiles();
+      this.currentPlayer.disable();
+      this.currentPlayer.perform(this).then(r => {})
+    }else{
+      // set the current players pieces eventMode to static
+      this.board.enableTiles();
+      this.currentPlayer.enable()
+
     }
   }
 

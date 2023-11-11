@@ -46,4 +46,15 @@ export class GameBoard extends Container {
     return move;
   }
 
+  disableTiles(){
+    this.tiles.forEach(tile => {
+      tile.eventMode = "none";
+    })
+  }
+
+  enableTiles() {
+    this.tiles.forEach(tile => {
+      tile.eventMode = "static";
+    })
+  }
 }

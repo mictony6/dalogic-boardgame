@@ -14,8 +14,6 @@ export class Tile extends Sprite {
     this.col = col;
     this.isBlack = isBlack;
 
-    this.eventMode = "static"
-
     this.occupied = false;
     /**
      *
