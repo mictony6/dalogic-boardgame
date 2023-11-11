@@ -1,6 +1,15 @@
 import {Player} from "./Player";
 
+/**
+ * Random AI player
+ */
 export class RandomAI extends Player{
+  /**
+   *
+   * @param name {string}
+   * @param id {number}
+   * @param color {number}
+   */
   constructor(name, id, color) {
     super(name, id, color);
 

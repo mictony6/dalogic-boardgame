@@ -1,7 +1,17 @@
-import * as PIXI from 'pixi.js';
 import {Sprite} from "pixi.js";
 
+/**
+ * Represents a tile on the board
+ */
 export class Tile extends Sprite {
+  /**
+   *
+   * @param row {number}
+   * @param col {number}
+   * @param tileSize {number}
+   * @param isBlack {boolean}
+   * @param app {Application}
+   */
   constructor(row, col,  tileSize, isBlack, app) {
     const textureColor = isBlack ? 0x000000 : 0xffffff; // Black or white tile
     const texture = new PIXI.Graphics();

@@ -2,7 +2,18 @@ import {Tile} from "./Tile";
 import {Container} from "pixi.js";
 import {Move} from "./Move";
 
+/**
+ * Holds the game board and all tiles
+ */
+
 export class GameBoard extends Container {
+  /**
+   *
+   * @param rows {number}
+   * @param columns {number}
+   * @param tileSize {number}
+   * @param app {PIXI.Application}
+   */
   constructor(rows, columns, tileSize, app) {
     super();
     this.app = app;

@@ -1,4 +1,13 @@
+/**
+ * Base class for a player.
+ */
 export class Player{
+  /**
+    *
+   * @param name {string}
+   * @param id {number}
+   * @param color {number}
+   */
   constructor(name, id, color) {
     this.name = name;
     this.id = id;

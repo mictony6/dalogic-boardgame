@@ -1,4 +1,6 @@
-
+/**
+ * Handles validation of moves relative to the game board
+ */
 export class MoveValidator {
   /**
    *

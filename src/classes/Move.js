@@ -1,4 +1,12 @@
+/**
+ * Represents a move
+ */
 export class Move{
+  /**
+   *
+   * @param piece {Piece}
+   * @param dest {Array} [row, col]
+   */
   constructor(piece, dest ) {
     this.piece = piece;
     this.destRow = dest[0];

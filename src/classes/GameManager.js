@@ -14,13 +14,37 @@ function createEnum(values) {
 }
 const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
 
-
+/**
+ * Handles the game logic
+ */
 export class GameManager {
+  /**
+   * Creates an instance of GameManager.
+   * @param app {PIXI.Application}
+   * @param renderer {GameRenderer}
+
+   */
   constructor(app, renderer) {
     this.app = app;
+    /**
+     *
+     * @type {GameRenderer}
+     */
     this.renderer = renderer;
+    /**
+     *
+     * @type {GameBoard}
+     */
     this.board = new GameBoard(8, 8, 64, this.app)
+    /**
+     *
+     * @type {Array<Piece>}
+     */
     this.pieces = []
+    /**
+     *
+     * @type {Array<Player>}
+     */
     this.players = []
     /**
      *
@@ -37,11 +61,21 @@ export class GameManager {
      * @type {Player}
      */
     this.currentPlayer = null;
+    /**
+     *
+     * @type {MoveValidator}
+     */
     this.moveValidator = new MoveValidator(this.board);
+    /**
+     * @type {GameMode}
+     */
     this.gameMode = GameMode.AIVsAI;
 
   }
 
+  /**
+   * Starts the game
+   */
   start() {
     // Initialize your game here
     this.loadGame();
@@ -125,12 +159,13 @@ export class GameManager {
   }
 
   /**
-   *
+   * Performs a capture move
    * @param capturingPiece {Piece}
    * @param targetPiece {Piece}
    * @return Boolean
    */
   performCapture(capturingPiece, targetPiece){
+
     if (targetPiece.player === capturingPiece.player){
       console.log("cant capture your own pieces")
       return false;
@@ -150,6 +185,8 @@ export class GameManager {
 
   /**
    * Gets called when player selects a piece and highlights its valid moves
+   * @method
+   * @memberof GameManager
    * @param piece { Piece}
    */
   selectPiece(piece) {
@@ -206,14 +243,17 @@ export class GameManager {
    * @returns {Array<Move>}
    */
   getAllMoves(piece){
-    return [
-      this.board.createMove(piece, [piece.row + 1, piece.col + 1]),
-      this.board.createMove(piece, [piece.row + 1, piece.col - 1]),
-      this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
-      this.board.createMove(piece, [piece.row - 1, piece.col - 1])
-    ]
-
-
+    if (this.currentPlayer === this.players[0]){
+      return [
+        this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
+        this.board.createMove(piece, [piece.row - 1, piece.col - 1])
+      ]
+    } else if (this.currentPlayer === this.players[1]){
+      return [
+        this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
+        this.board.createMove(piece, [piece.row - 1, piece.col - 1])
+      ]
+    }
   }
 
   /**

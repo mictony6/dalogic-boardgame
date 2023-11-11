@@ -1,6 +1,13 @@
 import * as PIXI from 'pixi.js';
 
+/**
+ * Class responsible for rendering the game
+ */
 export class GameRenderer {
+  /**
+   *
+   * @param app {PIXI.Application}
+   */
   constructor(app) {
     this.app = app; // Pixi.js Application instance
   }
