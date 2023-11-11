@@ -2,18 +2,7 @@ import {Tile} from "./Tile";
 import {Container} from "pixi.js";
 import {Move} from "./Move";
 
-/**
- * Holds the game board and all tiles
- */
-
 export class GameBoard extends Container {
-  /**
-   *
-   * @param rows {number}
-   * @param columns {number}
-   * @param tileSize {number}
-   * @param app {PIXI.Application}
-   */
   constructor(rows, columns, tileSize, app) {
     super();
     this.app = app;
@@ -50,7 +39,7 @@ export class GameBoard extends Container {
     if (dest[0] < 0 || dest[0] >= this.rows || dest[1] < 0 || dest[1] >= this.columns) {
       move.inBounds = false;
     }else {
-      move.desTile = this.getTile(dest[0], dest[1]);
+      move.destTile = this.getTile(dest[0], dest[1]);
     }
 
     // check if dest is in bounds

@@ -1,13 +1,4 @@
-/**
- * Base class for a player.
- */
 export class Player{
-  /**
-    *
-   * @param name {string}
-   * @param id {number}
-   * @param color {number}
-   */
   constructor(name, id, color) {
     this.name = name;
     this.id = id;
@@ -20,8 +11,22 @@ export class Player{
     this.movesHistory = [];
     this.ownedPieces = [];
 
+    /**
+     * The direction in which the player move by row. A positive value means the player moves down the board.
+     * @type {number}
+     */
+    this.direction = 0;
 
 
+
+  }
+
+  setDirectionUp(){
+    this.direction = -1;
+  }
+
+  setDirectionDown(){
+    this.direction = 1;
   }
 
   addMove(move){
@@ -35,6 +40,19 @@ export class Player{
   numberOfActivePieces(){
     return this.ownedPieces.length
   }
+
+  enable(){
+    this.ownedPieces.forEach(piece => {
+      piece.eventMode = "static";
+    })
+  }
+
+  disable(){
+    this.ownedPieces.forEach(piece => {
+      piece.eventMode = "none";
+    })
+  }
+
 
 
 

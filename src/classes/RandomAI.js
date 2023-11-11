@@ -1,15 +1,6 @@
 import {Player} from "./Player";
 
-/**
- * Random AI player
- */
 export class RandomAI extends Player{
-  /**
-   *
-   * @param name {string}
-   * @param id {number}
-   * @param color {number}
-   */
   constructor(name, id, color) {
     super(name, id, color);
 
@@ -36,8 +27,8 @@ export class RandomAI extends Player{
     this.selectAIPiece(manager  ).then(piece => {
       manager.selectPiece(piece);
       let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
-      if (randomMove.canCapture()){
-        manager.selectPiece(randomMove.desTile.piece);
+      if (randomMove.capturePossible()){
+        manager.selectPiece(randomMove.destTile.piece);
         return;
       }
       console.log(manager.currentPlayer.name, manager.currentPlayer.numberOfActivePieces())

@@ -14,37 +14,13 @@ function createEnum(values) {
 }
 const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
 
-/**
- * Handles the game logic
- */
-export class GameManager {
-  /**
-   * Creates an instance of GameManager.
-   * @param app {PIXI.Application}
-   * @param renderer {GameRenderer}
 
-   */
+export class GameManager {
   constructor(app, renderer) {
     this.app = app;
-    /**
-     *
-     * @type {GameRenderer}
-     */
     this.renderer = renderer;
-    /**
-     *
-     * @type {GameBoard}
-     */
     this.board = new GameBoard(8, 8, 64, this.app)
-    /**
-     *
-     * @type {Array<Piece>}
-     */
     this.pieces = []
-    /**
-     *
-     * @type {Array<Player>}
-     */
     this.players = []
     /**
      *
@@ -61,21 +37,11 @@ export class GameManager {
      * @type {Player}
      */
     this.currentPlayer = null;
-    /**
-     *
-     * @type {MoveValidator}
-     */
     this.moveValidator = new MoveValidator(this.board);
-    /**
-     * @type {GameMode}
-     */
-    this.gameMode = GameMode.AIVsAI;
+    this.gameMode = GameMode.PlayerVsPlayer;
 
   }
 
-  /**
-   * Starts the game
-   */
   start() {
     // Initialize your game here
     this.loadGame();
@@ -89,23 +55,46 @@ export class GameManager {
   loadTiles() {
     this.board.tiles.flat().forEach(tile => {
       tile.on('pointerdown', () => {
-        if (!this.selectedPiece) return;
-        let isInValidMoves = false;
-        for (let i = 0; i < this.currentPlayer.validMoves.length; i++){
-          let move = this.currentPlayer.validMoves[i];
-          if (move.desTile === tile){
-            this.switchPlayerTurn();
-            this.executeMove(move);
-            isInValidMoves = true;
-            break;
-          }
-        }
-        if (!isInValidMoves) {
-          this.deselectPiece();
-        }
+        this.selectTile(tile);
       });
       tile.eventMode = "static";
     });
+  }
+
+  /**
+   * Gets called when player selects a tile
+   * @param tile {Tile}
+   */
+  selectTile(tile) {
+    if (!this.selectedPiece) return;
+
+
+    let isInValidMoves = false;
+    for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
+      let move = this.currentPlayer.validMoves[i];
+      if (move.destTile === tile) {
+        if (move.isCaptureMove){
+          this.performCapture(move);
+          this.resetTileTints();
+          break;
+        }
+
+        if (tile.occupied && tile.piece.player !== this.currentPlayer) {
+          this.resetTileTints();
+          break;
+        }
+
+        this.switchPlayerTurn();
+        this.executeMove(move);
+        isInValidMoves = true;
+        break;
+      }
+    }
+
+
+    if (!isInValidMoves) {
+      this.deselectPiece();
+    }
   }
 
   loadPiecesForPlayer(player, startingRow) {
@@ -123,14 +112,19 @@ export class GameManager {
       piece.on('pointerdown', () => {
         this.selectPiece(piece);
       });
-      piece.eventMode = "static";
 
       player.ownedPieces.push(piece);
     }
   }
 
   loadGame() {
+    /**
+     * @type {Player}
+     */
     let player1 = null;
+    /**
+     * @type {Player}
+     */
     let player2 = null;
     if (this.gameMode === GameMode.PlayerVsPlayer) {
       player1 = new Player("Player 1", 1, 0xff0000);
@@ -144,10 +138,16 @@ export class GameManager {
       player2 = new RandomAI("Player 2", 2, 0x0000ff);
 
     }
+    if (player1 && player2){
 
-    this.players.push(player1);
-    this.players.push(player2);
-    this.currentPlayer = player1;
+      player1.setDirectionUp()
+      player2.setDirectionDown()
+      this.players.push(player1);
+      this.players.push(player2);
+
+    } else {
+      throw new Error("Invalid game mode")
+    }
 
     this.renderer.addElement(this.board);
 
@@ -156,46 +156,59 @@ export class GameManager {
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
     this.loadTiles();
+
+    this.currentPlayer = player2;
+    this.switchPlayerTurn();
   }
 
   /**
-   * Performs a capture move
-   * @param capturingPiece {Piece}
-   * @param targetPiece {Piece}
+   *
+   * @param move {Move}
    * @return Boolean
    */
-  performCapture(capturingPiece, targetPiece){
+  performCapture(move){
+    /**
+     * @type {Piece}
+     */
+    let capturingPiece = move.piece;
+    /**
+     * @type {Piece}
+     */
+    let targetPiece = move.destTile.piece;
 
-    if (targetPiece.player === capturingPiece.player){
-      console.log("cant capture your own pieces")
-      return false;
-    }
+    // if (!targetPiece || !capturingPiece) return false;
+    // if (targetPiece.player === capturingPiece.player){
+    //   console.log("cant capture your own pieces")
+    //   return false;
+    // }
 
     targetPiece.eventMode = 'none';
     targetPiece.tile.removeCurrentPiece();
-    targetPiece.tile.setPiece(capturingPiece);
 
     targetPiece.player.ownedPieces = targetPiece.player.ownedPieces.filter(piece => targetPiece !== piece)
 
     this.switchPlayerTurn();
-    this.executeMove(this.board.createMove(capturingPiece, [targetPiece.row, targetPiece.col]));
+
+    move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+    move.destTile.setPiece(capturingPiece);
+    this.executeMove(move);
     this.renderer.removeElement(targetPiece);
     return true;
   }
 
   /**
    * Gets called when player selects a piece and highlights its valid moves
-   * @method
-   * @memberof GameManager
    * @param piece { Piece}
    */
   selectPiece(piece) {
+    console.log("Piece selected", piece)
     if (piece.player !== this.currentPlayer) {
 
-      if (!this.performCapture(this.selectedPiece, piece)){
+
+      // if (!this.performCapture(this.selectedPiece, piece)){
 
         this.resetTileTints();
-      }
+      // }
       return;
     }
 
@@ -234,7 +247,7 @@ export class GameManager {
 
   getValidMoves(piece){
     const moves = this.getAllMoves(piece);
-    return moves.filter(move => this.moveValidator.isValidMove( move))
+    return moves.filter(move => this.moveValidator.validateMove( move))
   }
 
   /**
@@ -243,17 +256,14 @@ export class GameManager {
    * @returns {Array<Move>}
    */
   getAllMoves(piece){
-    if (this.currentPlayer === this.players[0]){
-      return [
-        this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
-        this.board.createMove(piece, [piece.row - 1, piece.col - 1])
-      ]
-    } else if (this.currentPlayer === this.players[1]){
-      return [
-        this.board.createMove(piece, [piece.row - 1, piece.col + 1]),
-        this.board.createMove(piece, [piece.row - 1, piece.col - 1])
-      ]
-    }
+    // // players can only move forward
+    return [
+      this.board.createMove(piece, [piece.row + piece.player.direction, piece.col + 1]),
+      this.board.createMove(piece, [piece.row + piece.player.direction, piece.col - 1])
+    ]
+
+
+
   }
 
   /**
@@ -266,12 +276,43 @@ export class GameManager {
     this.resetTileTints();
 
     this.currentPlayer.validMoves = this.getValidMoves(piece);
+
+
+    // this.filterCaptureMoves();
     this.currentPlayer.validMoves.forEach(move => {
-      let tile = move.desTile;
+
+      // check if capture move
+      if (this.moveValidator.validateCaptureMove(move)){
+        move.isCaptureMove = true;
+      }
+
+      let tile = move.destTile;
       tile.tint = 0x00ff00; // Apply tint to valid tiles
     });
 
   }
+
+
+
+
+  // filterCaptureMoves(){
+  //   let captureMoves = [];
+  //   let newMoves = [];
+  //
+  //
+  //   newMoves = this.currentPlayer.validMoves.filter(move => {
+  //       if (this.moveValidator.validateCaptureMove(move)){
+  //
+  //         let captureMove = this.board.createMove(move.piece, [move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff]);
+  //         captureMoves.push(captureMove);
+  //         return false;
+  //       }
+  //       return true;
+  //   })
+  //
+  //   this.currentPlayer.validMoves = newMoves.concat(captureMoves);
+  //   console.log(captureMoves);
+  // }
 
 
   /**
@@ -280,7 +321,7 @@ export class GameManager {
    */
   executeMove(move) {
 
-    const tile = move.desTile;
+    const tile = move.destTile;
 
     const destination = {
       x: tile.x + this.board.x,
@@ -326,7 +367,12 @@ export class GameManager {
    * Switches the current player
    */
   switchPlayerTurn() {
+    // set the previous players pieces eventMode to none
+    this.currentPlayer.disable()
+    // set current player to the other player
     this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
+    // set the current players pieces eventMode to static
+    this.currentPlayer.enable()
     if (this.currentPlayer instanceof RandomAI){
       this.currentPlayer.perform(this);
     }

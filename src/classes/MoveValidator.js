@@ -1,6 +1,4 @@
-/**
- * Handles validation of moves relative to the game board
- */
+
 export class MoveValidator {
   /**
    *
@@ -16,7 +14,7 @@ export class MoveValidator {
   //  * @param dest {Array}
   //  * @returns {boolean}
   //  */
-  // isValidMove( dest) {
+  // validateMove( dest) {
   //
   //   //check if dest is in bounds
   //   if (dest[0] < 0 || dest[0] >= this.board.rows || dest[1] < 0 || dest[1] >= this.board.columns) return false;
@@ -35,18 +33,18 @@ export class MoveValidator {
    *
    * @param move {Move}
    */
-  isValidMove(move){
+  validateMove(move){
     //check if dest is in bounds
     if (!move.inBounds) return false;
 
-
-    if (this.isCapturingMove(move)){
+    // check if dest tile is occupied
+    if (move.canMoveIntoTile()){
       return true;
     }
 
-    // check if dest tile is occupied
-    return move.canMove();
-
+    if (this.validateCaptureMove(move)){
+      return true;
+    }
 
 
 
@@ -56,8 +54,20 @@ export class MoveValidator {
    *
    * @param move {Move}
    */
-  isCapturingMove(move) {
-    return move.canCapture();
+  validateCaptureMove(move) {
+    // if tile across exists
+    /**
+     * @type {Move}
+     */
+    let moveAcross = this.board.createMove(move.piece, [move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff]);
+    if (!moveAcross.inBounds || moveAcross.destTile.occupied) {
+      return false;
+
+    }else {
+
+      return move.capturePossible();
+
+    }
   }
 
 }
