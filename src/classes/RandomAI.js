@@ -1,15 +1,6 @@
 import {Player} from "./Player";
 
-/**
- * Random AI player
- */
 export class RandomAI extends Player{
-  /**
-   *
-   * @param name {string}
-   * @param id {number}
-   * @param color {number}
-   */
   constructor(name, id, color) {
     super(name, id, color);
 
@@ -20,30 +11,45 @@ export class RandomAI extends Player{
       if (this.ownedPieces.length === 0) reject("No pieces left");
       setTimeout(() => {
         //make sure to select only piece with than can move
+        let count = 1;
         let piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
         while(manager.getValidMoves(piece).length === 0){
+          if (count >= this.ownedPieces.length){
+            reject("No more available piece at count: " + count)
+            break;
+          }
           piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
+          count ++;
         }
         resolve(piece);
       }, 300 );
     });
   }
 
+  selectAITile(){
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
+        resolve(randomMove);
+      }, 300)
+    })
+  }
+
   /**
    * @param {GameManager} manager
    */
-  perform(manager){
-    this.selectAIPiece(manager  ).then(piece => {
+  async perform(manager) {
+    try {
+      const piece = await this.selectAIPiece()
       manager.selectPiece(piece);
-      let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
-      if (randomMove.canCapture()){
-        manager.selectPiece(randomMove.desTile.piece);
-        return;
-      }
-      console.log(manager.currentPlayer.name, manager.currentPlayer.numberOfActivePieces())
+      const randomMove = await this.selectAITile(manager);
+      manager.selectTile(randomMove.destTile);
+    } catch (e) {
+      console.error(e);
+      console.log(manager.currentPlayer.name + " passing");
       manager.switchPlayerTurn();
-      manager.executeMove(randomMove);
-    });
+    }
+
 
   }
 

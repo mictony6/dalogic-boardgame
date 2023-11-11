@@ -1,27 +1,32 @@
-/**
- * Represents a move
- */
 export class Move{
-  /**
-   *
-   * @param piece {Piece}
-   * @param dest {Array} [row, col]
-   */
   constructor(piece, dest ) {
     this.piece = piece;
     this.destRow = dest[0];
     this.destCol = dest[1];
-    this.desTile = null;
+    /**
+     *
+     * @type {Tile}
+     */
+    this.destTile = null;
     this.inBounds = true;
+    this.isCaptureMove = false;
 
   }
 
-  canCapture(){
-    return this.desTile.occupied && this.desTile.piece.player !== this.piece.player;
+  capturePossible(){
+    return this.destTile.occupied && this.destTile.piece.player !== this.piece.player;
   }
 
-  canMove(){
-    return !this.desTile.occupied;
+  canMoveIntoTile(){
+    return !this.destTile.occupied;
+  }
+
+  get moveColDiff(){
+    return this.destCol - this.piece.col;
+  }
+
+  get moveRowDiff(){
+    return this.destRow - this.piece.row;
   }
 
 

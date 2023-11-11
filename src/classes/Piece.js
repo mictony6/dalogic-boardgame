@@ -1,11 +1,8 @@
 import {Graphics, Sprite, Text} from "pixi.js";
 
-/**
- * Represents a piece on the board
- */
 export class Piece extends Sprite{
   /**
-
+   *
    * @type {Player}
    */
   player = null;

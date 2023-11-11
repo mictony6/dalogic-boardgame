@@ -1,20 +1,9 @@
-import {Sprite} from "pixi.js";
+import {Sprite, Graphics} from "pixi.js";
 
-/**
- * Represents a tile on the board
- */
 export class Tile extends Sprite {
-  /**
-   *
-   * @param row {number}
-   * @param col {number}
-   * @param tileSize {number}
-   * @param isBlack {boolean}
-   * @param app {Application}
-   */
   constructor(row, col,  tileSize, isBlack, app) {
     const textureColor = isBlack ? 0x000000 : 0xffffff; // Black or white tile
-    const texture = new PIXI.Graphics();
+    const texture = new Graphics();
     texture.beginFill(textureColor);
     texture.drawRect(0,0, tileSize,tileSize);
     texture.endFill();
@@ -24,8 +13,6 @@ export class Tile extends Sprite {
     this.row = row;
     this.col = col;
     this.isBlack = isBlack;
-
-    this.eventMode = "static"
 
     this.occupied = false;
     /**
