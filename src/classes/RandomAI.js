@@ -33,8 +33,7 @@ export class RandomAI extends Player{
       setTimeout(() => {
         let captureMoves = this.validMoves.filter(move => manager.moveValidator.validateCaptureMove(move));
         if (captureMoves.length > 0){
-          let randomMove = captureMoves[Math.floor(Math.random() * captureMoves.length)];
-          resolve(randomMove);
+          resolve(captureMoves[0]);
         }else {
           let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
           resolve(randomMove);

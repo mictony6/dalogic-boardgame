@@ -16,7 +16,7 @@ const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
 
 
 export class GameManager {
-  boardDimension = [10,10];
+  boardDimension = [5,5];
   isPaused = false;
   constructor(app, renderer) {
     this.app = app;
@@ -40,7 +40,7 @@ export class GameManager {
      */
     this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.AIVsAI;
+    this.gameMode = GameMode.PlayerVsAI;
 
   }
 
@@ -187,15 +187,15 @@ export class GameManager {
     // free tile from target piece
     targetPiece.leaveCurrentTile();
 
-    this.switchPlayerTurn();
-
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
 
     // update capturing piece and its corresponding tile locations
+
     capturingPiece.leaveCurrentTile()
     capturingPiece.occupyTile(move.destTile);
-
     this.executeMove(move);
+
+    this.switchPlayerTurn();
     this.renderer.removeElement(targetPiece);
     return true;
   }
@@ -295,27 +295,6 @@ export class GameManager {
 
   }
 
-
-
-
-  // filterCaptureMoves(){
-  //   let captureMoves = [];
-  //   let newMoves = [];
-  //
-  //
-  //   newMoves = this.currentPlayer.validMoves.filter(move => {
-  //       if (this.moveValidator.validateCaptureMove(move)){
-  //
-  //         let captureMove = this.board.createMove(move.piece, [move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff]);
-  //         captureMoves.push(captureMove);
-  //         return false;
-  //       }
-  //       return true;
-  //   })
-  //
-  //   this.currentPlayer.validMoves = newMoves.concat(captureMoves);
-  //   console.log(captureMoves);
-  // }
 
 
   /**
