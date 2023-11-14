@@ -3,12 +3,14 @@ import './style.css';
 import {GameManager} from "./classes/GameManager";
 import {GameRenderer} from "./classes/GameRenderer";
 
+
+
+const pauseButton = document.getElementById('pauseButton');
+
 const app = new PIXI.Application({
   background: '#74bbde',
   width:600,
   height:600,
-  resizeTo: window,
-  transparent: false,
   antialias: true,
 });
 
@@ -43,4 +45,19 @@ function handleVisibilityChange() {
     gameManager.resumeGame();
   }
 }
+
+if (pauseButton) {
+  pauseButton.onclick =() => {
+    if(gameManager.isPaused) {
+      pauseButton.innerText = "Pause"
+      gameManager.resumeGame();
+    } else {
+      pauseButton.innerText = "Resume"
+      gameManager.pauseGame();
+    }
+  }
+} else {
+  console.error('Pause button not found!');
+}
+
 gameManager.start()

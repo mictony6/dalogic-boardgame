@@ -40,7 +40,7 @@ export class GameManager {
      */
     this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.PlayerVsAI;
+    this.gameMode = GameMode.AIVsAI;
 
   }
 
@@ -296,7 +296,6 @@ export class GameManager {
   }
 
 
-
   /**
    * Executes a move and animates the piece. Note: This does not check if the move is valid.
    * @param move {Move}
@@ -348,6 +347,8 @@ export class GameManager {
    * Switches the current player
    */
   switchPlayerTurn() {
+
+
     // set the previous players pieces eventMode to none
     this.currentPlayer.disable()
     // set current player to the other player

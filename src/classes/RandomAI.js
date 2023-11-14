@@ -46,6 +46,11 @@ export class RandomAI extends Player{
    * @param {GameManager} manager
    */
   async perform(manager) {
+
+    // wait for game to unpause
+    while (manager.isPaused) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     try {
       const piece = await this.selectAIPiece(manager)
       manager.selectPiece(piece);
