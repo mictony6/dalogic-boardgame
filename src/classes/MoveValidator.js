@@ -1,3 +1,5 @@
+import { GameBoard } from "./GameBoard";
+import { Move } from "./Move";
 
 export class MoveValidator {
   /**
@@ -33,16 +35,16 @@ export class MoveValidator {
    *
    * @param move {Move}
    */
-  validateMove(move){
+  validateMove(move) {
     //check if dest is in bounds
     if (!move.inBounds) return false;
 
     // check if dest tile is occupied
-    if (move.canMoveIntoTile()){
+    if (move.canMoveIntoTile()) {
       return true;
     }
 
-    if (this.validateCaptureMove(move)){
+    if (this.validateCaptureMove(move)) {
       return true;
     }
 
@@ -63,7 +65,7 @@ export class MoveValidator {
     if (!moveAcross.inBounds || moveAcross.destTile.occupied) {
       return false;
 
-    }else {
+    } else {
 
       return move.capturePossible();
 

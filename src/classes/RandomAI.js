@@ -1,12 +1,17 @@
-import {Player} from "./Player";
+import { GameManager } from "./GameManager";
+import { Player } from "./Player";
 
-export class RandomAI extends Player{
+export class RandomAI extends Player {
   constructor(name, id, color) {
     super(name, id, color);
 
   }
 
-  selectAIPiece(manager){
+  async selectAIPiece(manager) {
+    // wait for game to unpause
+    while (manager.isPaused) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     return new Promise((resolve, reject) => {
       if (this.ownedPieces.length === 0) reject("No pieces left");
       setTimeout(() => {
@@ -14,27 +19,31 @@ export class RandomAI extends Player{
         let count = 1;
 
         let piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
-        while(manager.getValidMoves(piece).length === 0){
+        while (manager.getValidMoves(piece).length === 0) {
 
-          if (count > this.ownedPieces.length){
+          if (count > this.ownedPieces.length) {
             reject("No more available piece at count: " + count)
             break;
           }
           piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
-          count ++;
+          count++;
         }
         resolve(piece);
-      }, 500 );
+      }, 500);
     });
   }
 
-  selectAITile(manager){
+  async selectAITile(manager) {
+    // wait for game to unpause
+    while (manager.isPaused) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     return new Promise((resolve) => {
       setTimeout(() => {
         let captureMoves = this.validMoves.filter(move => manager.moveValidator.validateCaptureMove(move));
-        if (captureMoves.length > 0){
+        if (captureMoves.length > 0) {
           resolve(captureMoves[0]);
-        }else {
+        } else {
           let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
           resolve(randomMove);
         }
