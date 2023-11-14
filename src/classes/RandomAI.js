@@ -12,9 +12,11 @@ export class RandomAI extends Player{
       setTimeout(() => {
         //make sure to select only piece with than can move
         let count = 1;
+
         let piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
         while(manager.getValidMoves(piece).length === 0){
-          if (count >= this.ownedPieces.length){
+
+          if (count > this.ownedPieces.length){
             reject("No more available piece at count: " + count)
             break;
           }
@@ -22,16 +24,22 @@ export class RandomAI extends Player{
           count ++;
         }
         resolve(piece);
-      }, 300 );
+      }, 500 );
     });
   }
 
-  selectAITile(){
+  selectAITile(manager){
     return new Promise((resolve) => {
       setTimeout(() => {
-        let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
-        resolve(randomMove);
-      }, 300)
+        let captureMoves = this.validMoves.filter(move => manager.moveValidator.validateCaptureMove(move));
+        if (captureMoves.length > 0){
+          let randomMove = captureMoves[Math.floor(Math.random() * captureMoves.length)];
+          resolve(randomMove);
+        }else {
+          let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
+          resolve(randomMove);
+        }
+      }, 500)
     })
   }
 
@@ -40,7 +48,7 @@ export class RandomAI extends Player{
    */
   async perform(manager) {
     try {
-      const piece = await this.selectAIPiece()
+      const piece = await this.selectAIPiece(manager)
       manager.selectPiece(piece);
       const randomMove = await this.selectAITile(manager);
       manager.selectTile(randomMove.destTile);

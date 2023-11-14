@@ -16,10 +16,12 @@ const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
 
 
 export class GameManager {
+  boardDimension = [10,10];
+  isPaused = false;
   constructor(app, renderer) {
     this.app = app;
     this.renderer = renderer;
-    this.board = new GameBoard(8, 8, 64, this.app)
+    this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
     this.pieces = []
     this.players = []
     /**
@@ -42,7 +44,7 @@ export class GameManager {
 
   }
 
-  start() {
+    start() {
     // Initialize your game here
     this.loadGame();
     this.app.ticker.add(this.updateAll.bind(this));
@@ -145,8 +147,8 @@ export class GameManager {
 
     this.renderer.addElement(this.board);
 
-    this.loadPiecesForPlayer(player1, 7);
-    this.loadPiecesForPlayer(player1, 6);
+    this.loadPiecesForPlayer(player1, this.boardDimension[0]-1);
+    this.loadPiecesForPlayer(player1, this.boardDimension[0]-2);
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
     this.loadTiles();
@@ -161,6 +163,10 @@ export class GameManager {
    * @return Boolean
    */
   performCapture(move){
+
+    // run player logic for capturing a piece
+    this.currentPlayer.onCapture(move)
+
     /**
      * @type {Piece}
      */
@@ -168,6 +174,7 @@ export class GameManager {
     /**
      * @type {Piece}
      */
+
     let targetPiece = move.destTile.piece;
 
     // disable target piece's input detection
@@ -379,6 +386,15 @@ export class GameManager {
   }
 
 
+  pauseGame() {
+    this.isPaused = true;
+    console.log("Game Paused")
+    this.app.ticker.stop()
+  }
 
-
+  resumeGame(){
+    this.isPaused = false;
+    console.log("Game Resumed")
+    this.app.ticker.start()
+  }
 }

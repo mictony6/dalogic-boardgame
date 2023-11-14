@@ -1,21 +1,23 @@
 export class Player{
+  /**
+   *
+   * @type {Array<Move>}
+   */
+  validMoves = [];
+  movesHistory = [];
+  ownedPieces = [];
+
+  /**
+   * The direction in which the player move by row. A positive value means the player moves down the board.
+   * @type {number}
+   */
+  direction = 0;
+  score = 0;
   constructor(name, id, color) {
     this.name = name;
     this.id = id;
     this.color =color;
-    /**
-     *
-     * @type {Array<Move>}
-     */
-    this.validMoves = [];
-    this.movesHistory = [];
-    this.ownedPieces = [];
 
-    /**
-     * The direction in which the player move by row. A positive value means the player moves down the board.
-     * @type {number}
-     */
-    this.direction = 0;
 
 
 
@@ -62,6 +64,14 @@ export class Player{
   }
 
 
+  /**
+   *
+   * @param move {Move}
+   */
+  onCapture(move){
+    const player = move.piece.player;
+    console.log(player.name + " captured " + move.destTile.piece.player.name + "'s piece");
+  }
 
 
 }
