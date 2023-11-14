@@ -2,60 +2,104 @@ import { GameBoard } from "./GameBoard";
 import { Piece } from "./Piece";
 import { Player } from "./Player";
 import { MoveValidator } from "./MoveValidator";
-import {RandomAI} from "./RandomAI";
+import { RandomAI } from "./RandomAI";
+import { Move } from "./Move";
+import { Tile } from "./Tile";
 
-function createEnum(values) {
-  const enumObject = {};
-  let count = 0;
-  for (const val of values) {
-    enumObject[val] = count++;
+
+class GameModeFactory {
+  PlayerVsPlayer = 0;
+  PlayerVsAI = 1;
+  AIVsAI = 2;
+  constructor() {
+    Object.freeze(this);
   }
-  return Object.freeze(enumObject);
 }
-const GameMode = createEnum(['PlayerVsPlayer', 'PlayerVsAI', 'AIVsAI']);
-
+const GameMode = new GameModeFactory();
 
 export class GameManager {
-  boardDimension = [5,5];
+  boardDimension = [5, 5];
   isPaused = false;
+  pieces = []
+  players = []
+  /**
+   *
+   * @type {Piece}
+   */
+  selectedPiece = null;
+  /**
+   *
+   * @type {Tile}
+   */
+  selectedTile = null;
+  /**
+   *
+   * @type {Player}
+   */
+  currentPlayer = null;
+
+
   constructor(app, renderer) {
     this.app = app;
     this.renderer = renderer;
     this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
-    this.pieces = []
-    this.players = []
-    /**
-     *
-     * @type {Piece}
-     */
-    this.selectedPiece = null;
-    /**
-     *
-     * @type {Tile}
-     */
-    this.selectedTile = null;
-    /**
-     *
-     * @type {Player}
-     */
-    this.currentPlayer = null;
     this.moveValidator = new MoveValidator(this.board);
+    this.state = {
+      currentState: 'playing',
+      transitions: {
+        playing: {
+          update: this.updatePlaying.bind(this),
+        },
+        paused: {
+          update: this.updatePaused.bind(this),
+        },
+        // Add more states as needed...
+      },
+    };
     this.gameMode = GameMode.AIVsAI;
 
   }
 
-    start() {
+  start() {
     // Initialize your game here
     this.loadGame();
-    this.app.ticker.add(this.updateAll.bind(this));
+    this.app.ticker.add(this.update.bind(this));
   }
 
   loadTiles() {
     this.board.tiles.flat().forEach(tile => {
       tile.on('pointerdown', () => {
+        if (this.isPaused) {
+          return; // Ignore input if the game is paused
+        }
         this.selectTile(tile);
       });
     });
+  }
+
+
+  loadPiecesForPlayer(player, startingRow) {
+    for (let col = 0; col < this.board.columns; col++) {
+      const tile = this.board.getTile(startingRow, col);
+      if (tile.isBlack) continue;
+      let piece = new Piece(startingRow, col, 64, this.app);
+      piece.assignPlayer(player);
+      piece.occupyTile(tile);
+
+
+      this.pieces.push(piece);
+      this.renderer.addElement(piece);
+
+      piece.on('pointerdown', () => {
+        if (this.isPaused) {
+          return; // Ignore input if the game is paused
+        }
+        this.selectPiece(piece);
+      });
+
+      player.ownedPieces.push(piece);
+
+    }
   }
 
   /**
@@ -73,7 +117,7 @@ export class GameManager {
     for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
       let move = this.currentPlayer.validMoves[i];
       if (move.destTile === tile) {
-        if (move.isCaptureMove){
+        if (move.isCaptureMove) {
           this.performCapture(move);
           this.resetTileTints();
           isInValidMoves = true;
@@ -93,25 +137,6 @@ export class GameManager {
     }
   }
 
-  loadPiecesForPlayer(player, startingRow) {
-    for (let col = 0; col < this.board.columns; col++) {
-      const tile = this.board.getTile(startingRow, col);
-      if (tile.isBlack) continue;
-      let piece = new Piece(startingRow, col, 64, this.app);
-      piece.assignPlayer(player);
-      piece.occupyTile(tile);
-
-
-      this.pieces.push(piece);
-      this.renderer.addElement(piece);
-
-      piece.on('pointerdown', () => {
-        this.selectPiece(piece);
-      });
-
-      player.ownedPieces.push(piece);
-    }
-  }
 
   loadGame() {
     /**
@@ -126,15 +151,15 @@ export class GameManager {
       player1 = new Player("Player 1", 1, 0xff0000);
       player2 = new Player("Player 2", 2, 0x0000ff);
 
-    }else if (this.gameMode === GameMode.PlayerVsAI){
+    } else if (this.gameMode === GameMode.PlayerVsAI) {
       player1 = new Player("Player 1", 1, 0xff0000);
       player2 = new RandomAI("Player 2", 2, 0x0000ff);
-    } else if (this.gameMode === GameMode.AIVsAI){
+    } else if (this.gameMode === GameMode.AIVsAI) {
       player1 = new RandomAI("Player 1", 1, 0xff0000);
       player2 = new RandomAI("Player 2", 2, 0x0000ff);
 
     }
-    if (player1 && player2){
+    if (player1 && player2) {
 
       player1.setDirectionUp()
       player2.setDirectionDown()
@@ -147,8 +172,8 @@ export class GameManager {
 
     this.renderer.addElement(this.board);
 
-    this.loadPiecesForPlayer(player1, this.boardDimension[0]-1);
-    this.loadPiecesForPlayer(player1, this.boardDimension[0]-2);
+    this.loadPiecesForPlayer(player1, this.boardDimension[0] - 1);
+    this.loadPiecesForPlayer(player1, this.boardDimension[0] - 2);
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
     this.loadTiles();
@@ -162,7 +187,9 @@ export class GameManager {
    * @param move {Move}
    * @return Boolean
    */
-  performCapture(move){
+  async performCapture(move) {
+
+
 
     // run player logic for capturing a piece
     this.currentPlayer.onCapture(move)
@@ -210,7 +237,7 @@ export class GameManager {
 
       // if (!this.performCapture(this.selectedPiece, piece)){
 
-        this.resetTileTints();
+      this.resetTileTints();
       // }
       return;
     }
@@ -239,18 +266,10 @@ export class GameManager {
 
 
 
-  update(delta) {}
 
-
-  updateAll(delta) {
-    this.update(delta);
-  }
-
-
-
-  getValidMoves(piece){
+  getValidMoves(piece) {
     const moves = this.getAllMoves(piece);
-    return moves.filter(move => this.moveValidator.validateMove( move))
+    return moves.filter(move => this.moveValidator.validateMove(move))
   }
 
   /**
@@ -258,7 +277,7 @@ export class GameManager {
    * @param piece {Piece}
    * @returns {Array<Move>}
    */
-  getAllMoves(piece){
+  getAllMoves(piece) {
     // // players can only move forward
     return [
       this.board.createMove(piece, [piece.row + piece.player.direction, piece.col + 1]),
@@ -285,7 +304,7 @@ export class GameManager {
     this.currentPlayer.validMoves.forEach(move => {
 
       // check if capture move
-      if (this.moveValidator.validateCaptureMove(move)){
+      if (this.moveValidator.validateCaptureMove(move)) {
         move.isCaptureMove = true;
       }
 
@@ -324,6 +343,7 @@ export class GameManager {
       return start + t * (end - start);
     }
     const moveFunction = (delta) => {
+
       elapsedTime += (delta / 60) * 1000;
       if (elapsedTime >= animationDuration) {
         piece.row = tile.row;
@@ -339,7 +359,7 @@ export class GameManager {
         piece.y = lerp(startingPosition.y, destination.y, t);
       }
     };
-      this.app.ticker.add(moveFunction);
+    this.app.ticker.add(moveFunction);
 
   }
 
@@ -353,11 +373,11 @@ export class GameManager {
     this.currentPlayer.disable()
     // set current player to the other player
     this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
-    if (this.currentPlayer instanceof RandomAI){
+    if (this.currentPlayer instanceof RandomAI) {
       this.board.disableTiles();
       this.currentPlayer.disable();
-      this.currentPlayer.perform(this).then(() => {})
-    }else{
+      this.currentPlayer.perform(this).then(() => { })
+    } else {
       // set the current players pieces eventMode to static
       this.board.enableTiles();
       this.currentPlayer.enable()
@@ -366,15 +386,33 @@ export class GameManager {
   }
 
 
-  pauseGame() {
-    this.isPaused = true;
-    console.log("Game Paused")
-    this.app.ticker.stop()
+  update(delta) {
+    if (this.state.transitions[this.state.currentState] && this.state.transitions[this.state.currentState].update) {
+      this.state.transitions[this.state.currentState].update(delta);
+    }
   }
 
-  resumeGame(){
-    this.isPaused = false;
-    console.log("Game Resumed")
-    this.app.ticker.start()
+
+
+  updatePlaying(delta) {
+    // Logic for the "playing" state...
+
+    if (this.isPaused) {
+      console.log("Game Paused")
+      this.state.currentState = 'paused';
+    }
   }
+
+  updatePaused(delta) {
+    // Logic for the "paused" state...
+
+
+    if (!this.isPaused) {
+      console.log("Game Resumed")
+
+      this.state.currentState = 'playing';
+    }
+  }
+
+
 }

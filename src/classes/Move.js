@@ -1,5 +1,7 @@
-export class Move{
-  constructor(piece, dest ) {
+import { Tile } from "./Tile";
+
+export class Move {
+  constructor(piece, dest) {
     this.piece = piece;
     this.destRow = dest[0];
     this.destCol = dest[1];
@@ -13,19 +15,19 @@ export class Move{
 
   }
 
-  capturePossible(){
+  capturePossible() {
     return this.destTile.occupied && this.destTile.piece.player !== this.piece.player;
   }
 
-  canMoveIntoTile(){
+  canMoveIntoTile() {
     return !this.destTile.occupied;
   }
 
-  get moveColDiff(){
+  get moveColDiff() {
     return this.destCol - this.piece.col;
   }
 
-  get moveRowDiff(){
+  get moveRowDiff() {
     return this.destRow - this.piece.row;
   }
 

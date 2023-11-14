@@ -1,4 +1,7 @@
-export class Player{
+import { Move } from "./Move";
+import { Piece } from "./Piece";
+
+export class Player {
   /**
    *
    * @type {Array<Move>}
@@ -16,40 +19,40 @@ export class Player{
   constructor(name, id, color) {
     this.name = name;
     this.id = id;
-    this.color =color;
+    this.color = color;
 
 
 
 
   }
 
-  setDirectionUp(){
+  setDirectionUp() {
     this.direction = -1;
   }
 
-  setDirectionDown(){
+  setDirectionDown() {
     this.direction = 1;
   }
 
-  addMove(move){
+  addMove(move) {
     this.movesHistory.push(move);
   }
 
-  undoMove(){
+  undoMove() {
     return this.movesHistory.pop();
   }
 
-  numberOfActivePieces(){
+  numberOfActivePieces() {
     return this.ownedPieces.length
   }
 
-  enable(){
+  enable() {
     this.ownedPieces.forEach(piece => {
       piece.eventMode = "static";
     })
   }
 
-  disable(){
+  disable() {
     this.ownedPieces.forEach(piece => {
       piece.eventMode = "none";
     })
@@ -59,7 +62,7 @@ export class Player{
    *
    * @param capturedPiece {Piece}
    */
-  freePiece(capturedPiece){
+  freePiece(capturedPiece) {
     this.ownedPieces = this.ownedPieces.filter(piece => piece !== capturedPiece);
   }
 
@@ -68,7 +71,7 @@ export class Player{
    *
    * @param move {Move}
    */
-  onCapture(move){
+  onCapture(move) {
     const player = move.piece.player;
     console.log(player.name + " captured " + move.destTile.piece.player.name + "'s piece");
   }
