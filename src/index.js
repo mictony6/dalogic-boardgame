@@ -7,6 +7,7 @@ import { GameRenderer } from "./classes/GameRenderer";
 
 const pauseButton = document.getElementById('pauseButton');
 const reloadTileButton = document.getElementById('reloadTiles');
+const passButton = document.getElementById('passButton');
 
 const app = new PIXI.Application({
   background: '#74bbde',
@@ -42,6 +43,12 @@ if (pauseButton) {
 if (reloadTileButton) {
   reloadTileButton.onclick = () => {
     gameManager.board.regenerateTileOperations()
+  }
+}
+
+if (passButton) {
+  passButton.onclick = () => {
+    gameManager.switchPlayerTurn()
   }
 }
 

@@ -23,7 +23,7 @@ const GameMode = new GameModeFactory();
  * Manager class which handles the general interaction between game elements.
  */
 export class GameManager {
-  boardDimension = [5, 5];
+  boardDimension = [8, 8];
   isPaused = false;
   /**
    * @type {Piece[]}
@@ -55,7 +55,7 @@ export class GameManager {
     this.renderer = renderer;
     this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.PlayerVsAI;
+    this.gameMode = GameMode.AIVsAI;
     this.stateManager = new StateManager(this, "playing");
     this.inputManager = new InputManager(this, this.stateManager);
 
@@ -66,7 +66,6 @@ export class GameManager {
     this.loadGame();
     this.app.ticker.add(this.update.bind(this));
   }
-
 
   loadPiecesForPlayer(player, startingRow) {
     for (let col = 0; col < this.board.columns; col++) {
@@ -138,10 +137,6 @@ export class GameManager {
    * @return Boolean
    */
   async performCapture(move) {
-    // run player logic for capturing a piece
-    this.currentPlayer.onCapture(move)
-
-
     /**
      * @type {Piece}
      */
@@ -151,6 +146,7 @@ export class GameManager {
      * @type {Piece}
      */
     let targetPiece = move.destTile.piece;
+    move.capturedPiece = targetPiece;
 
     // disable target piece's input detection
     targetPiece.eventMode = 'none';
@@ -163,7 +159,6 @@ export class GameManager {
     targetPiece.leaveCurrentTile();
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
-
     capturingPiece.pieceValue = this.performTileOperation(capturingPiece.pieceValue, targetPiece.pieceValue, move.destTile.operation);
 
 
@@ -175,6 +170,8 @@ export class GameManager {
     capturingPiece.occupyTile(move.destTile);
     this.executeMove(move);
 
+    // run player logic for capturing a piece
+    this.currentPlayer.onCapture(move)
     this.switchPlayerTurn();
     this.renderer.removeElement(targetPiece);
     return true;
@@ -319,6 +316,8 @@ export class GameManager {
   executeMove(move) {
 
     const tile = move.destTile;
+    //tint the tile green
+    tile.tint =  0x00ff00;
 
     const destination = {
       x: tile.x + this.board.x,

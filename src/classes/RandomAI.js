@@ -28,7 +28,7 @@ export class RandomAI extends Player {
           count++;
         }
         resolve(piece);
-      }, 500);
+      }, 400);
     });
   }
 
@@ -46,7 +46,7 @@ export class RandomAI extends Player {
           let randomMove = this.validMoves[Math.floor(Math.random() * this.validMoves.length)];
           resolve(randomMove);
         }
-      }, 500)
+      }, 250)
     })
   }
 

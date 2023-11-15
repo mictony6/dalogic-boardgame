@@ -12,6 +12,7 @@ export class Move {
     this.destTile = null;
     this.inBounds = true;
     this.isCaptureMove = false;
+    this.capturedPiece = null;
 
   }
 
