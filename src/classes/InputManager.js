@@ -1,7 +1,13 @@
 export class InputManager {
+  /**
+   *
+   * @param gameManager {GameManager}
+   * @param stateManager {StateManager}
+   */
   constructor(gameManager, stateManager) {
     this.gameManager = gameManager;
     this.stateManager = stateManager;
+
   }
 
   initialize() {
@@ -37,9 +43,6 @@ export class InputManager {
 
     if (currentState === 'playing') {
       this.gameManager.selectPiece(piece);
-    } else if (currentState === 'paused') {
-
-      // Handle input for the paused state, if needed
     }
   }
 
@@ -48,9 +51,6 @@ export class InputManager {
 
     if (currentState === 'playing') {
       this.gameManager.selectTile(tile);
-    } else if (currentState === 'paused') {
-
-      // Handle input for the paused state, if needed
     }
 
   }

@@ -1,6 +1,22 @@
 export class StateManager {
-  constructor(initialState) {
+  /**
+   *
+   * @param manager {GameManager}
+   * @param initialState {string}
+   */
+  constructor(manager, initialState) {
     this.currentState = initialState;
+    this.manager = manager;
+
+    this.transitions = {
+      playing: {
+        update: manager.updatePlaying.bind(manager),
+      },
+      paused: {
+        update: manager.updatePaused.bind(manager),
+      },
+      // Add more states as needed...
+    }
   }
 
   setPaused(paused) {

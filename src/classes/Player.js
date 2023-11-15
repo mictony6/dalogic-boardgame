@@ -9,6 +9,14 @@ export class Player {
   validMoves = [];
   movesHistory = [];
   ownedPieces = [];
+  /**
+   * @type {Move[]}
+   */
+  captureMoves = [];
+  /**
+   * @type {Piece[]}
+   */
+  capturedPieces = [];
 
   /**
    * The direction in which the player move by row. A positive value means the player moves down the board.
@@ -20,10 +28,6 @@ export class Player {
     this.name = name;
     this.id = id;
     this.color = color;
-
-
-
-
   }
 
   setDirectionUp() {
@@ -74,6 +78,11 @@ export class Player {
   onCapture(move) {
     const player = move.piece.player;
     console.log(player.name + " captured " + move.destTile.piece.player.name + "'s piece");
+
+  }
+
+  addScore(score) {
+    this.score += score;
   }
 
 

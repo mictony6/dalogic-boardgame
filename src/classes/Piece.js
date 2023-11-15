@@ -90,20 +90,5 @@ export class Piece extends Sprite {
     }
   }
 
-  /**
-   *
-   * @param piece {Piece}
-   * @return Boolean
-   */
-  capture(piece) {
-    if (piece.player === this.player) {
-      console.log("cant capture your own pieces")
-      return false;
-    }
-
-    piece.eventMode = 'none';
-    return true;
-  }
-
 
 }
