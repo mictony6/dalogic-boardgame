@@ -1,6 +1,7 @@
 import { Tile } from "./Tile";
 import { Application, Container } from "pixi.js";
 import { Move } from "./Move";
+import {Operations} from "./Operations";
 
 
 /**
@@ -86,6 +87,12 @@ export class GameBoard extends Container {
   enableTiles() {
     this.tiles.flat().forEach((tile) => {
       tile.eventMode = 'static';
+    });
+  }
+
+  regenerateTileOperations() {
+    this.tiles.flat().forEach((tile) => {
+      tile.operation = Operations.operations[Math.floor(Math.random() * Operations.operations.length)];
     });
   }
 

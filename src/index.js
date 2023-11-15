@@ -6,6 +6,7 @@ import { GameRenderer } from "./classes/GameRenderer";
 
 
 const pauseButton = document.getElementById('pauseButton');
+const reloadTileButton = document.getElementById('reloadTiles');
 
 const app = new PIXI.Application({
   background: '#74bbde',
@@ -36,6 +37,12 @@ if (pauseButton) {
   }
 } else {
   console.error('Pause button not found!');
+}
+
+if (reloadTileButton) {
+  reloadTileButton.onclick = () => {
+    gameManager.board.regenerateTileOperations()
+  }
 }
 
 gameManager.start()

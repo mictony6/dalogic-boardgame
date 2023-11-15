@@ -14,9 +14,17 @@ export class Operations {
     return a ^ b;
   }
 
-  static not(a){
-    if (a === 0) return 1;
-    else return 0;
+  static not(a) {
+    return Operations.truncateBits(~a, 1);
+  }
+
+  // Function to cut off extra bits and keep only a specified number of bits
+  static truncateBits(number, numBits) {
+    // Create a bitmask with the desired number of bits
+    let bitmask = (1 << numBits) - 1;
+
+    // Perform bitwise AND operation to retain only the specified number of bits
+    return number & bitmask;
   }
 
   static nand(a,b){
@@ -27,5 +35,10 @@ export class Operations {
     return this.not(this.or(a,b));
   }
 
+  static get operations(){
+    return ['AND', 'OR', 'XOR', 'NAND'];
+  }
+
 
 }
+
