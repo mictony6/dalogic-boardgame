@@ -1,4 +1,3 @@
-import { GameBoard } from "./GameBoard";
 import { Move } from "./Move";
 
 export class MoveValidator {
@@ -9,27 +8,6 @@ export class MoveValidator {
   constructor(board) {
     this.board = board;
   }
-
-
-  // /**
-  //  *
-  //  * @param dest {Array}
-  //  * @returns {boolean}
-  //  */
-  // validateMove( dest) {
-  //
-  //   //check if dest is in bounds
-  //   if (dest[0] < 0 || dest[0] >= this.board.rows || dest[1] < 0 || dest[1] >= this.board.columns) return false;
-  //
-  //   let destTile = this.board.getTile(dest[0], dest[1]);
-  //
-  //   // check if dest tile is occupied
-  //   if (destTile.occupied) return false;
-  //
-  //
-  //   return true;
-  //
-  // }
 
   /**
    *

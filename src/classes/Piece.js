@@ -1,6 +1,4 @@
-import { Graphics, Sprite, Text } from "pixi.js";
-import { Player } from "./Player";
-import { Tile } from "./Tile";
+import {Graphics, Sprite, Text, TextStyle} from "pixi.js";
 
 // @ts-ignore
 export class Piece extends Sprite {
@@ -17,6 +15,7 @@ export class Piece extends Sprite {
     texture.drawCircle(0, 0, tileSize / 2);
     texture.endFill();
 
+
     super(app.renderer.generateTexture(texture));
 
     this.position.x = col * tileSize;
@@ -32,9 +31,25 @@ export class Piece extends Sprite {
      * @type {Tile}
      */
     this.tile = null;
-    this._pieceValue = 0;
+    // generate random number between 0 and 1
+    this._pieceValue = Math.floor(Math.random() * 2);
     this.eventMode = 'static'
 
+
+
+    // Create text
+    this.text = new Text(this.binRep, new TextStyle({
+      fill: 0xffffff,
+      fontSize: 24
+    }));
+
+    // Set text anchor to center
+    this.text.anchor.set(0.5);
+
+
+
+    // Add text as a child of the piece
+    this.addChild(this.text);
 
   }
 
@@ -91,19 +106,18 @@ export class Piece extends Sprite {
   }
 
   /**
-   *
-   * @param piece {Piece}
-   * @return Boolean
+   * Display pieceValue over the piece
    */
-  capture(piece) {
-    if (piece.player === this.player) {
-      console.log("cant capture your own pieces")
-      return false;
-    }
+  renderPieceValue() {
 
-    piece.eventMode = 'none';
-    return true;
+    this.text.text = this.binRep;
+    // Calculate the center coordinates of the circle
+    const centerX = this.width / 2;
+    const centerY = this.height / 2;
+    // Position text at the center of the circle
+    this.text.position.set(centerX, centerY);
   }
+
 
 
 }
