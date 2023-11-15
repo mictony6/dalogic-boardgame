@@ -8,11 +8,12 @@ import { GameRenderer } from "./classes/GameRenderer";
 const pauseButton = document.getElementById('pauseButton');
 const reloadTileButton = document.getElementById('reloadTiles');
 const passButton = document.getElementById('passButton');
+const centerDiv = document.getElementById("center");
 
 const app = new PIXI.Application({
   background: '#74bbde',
-  width: 600,
-  height: 600,
+  width: 64 * 8,
+  height: 64 * 8,
   antialias: true,
 });
 
@@ -22,7 +23,7 @@ const canvasStyle = app.renderer.view.style;
 if (canvasStyle instanceof CSSStyleDeclaration) {
   canvasStyle.position = 'absolute';
   // @ts-ignore
-  document.body.appendChild(app.view);
+  centerDiv.appendChild(app.view);
 } else {
   console.error('canvas style is not an instance of CSSStyleDeclaration');
 }

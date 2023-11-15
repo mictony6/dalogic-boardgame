@@ -4,8 +4,10 @@ import { MoveValidator } from "./MoveValidator";
 import { RandomAI } from "./RandomAI";
 import { StateManager } from "./StateManager";
 import { InputManager } from "./InputManager";
-import {Piece} from "./Piece";
-import {Operations} from "./Operations";
+import { Piece } from "./Piece";
+import { Operations } from "./Operations";
+import { Application, Renderer } from "pixi.js";
+import { GameRenderer } from "./GameRenderer";
 
 
 class GameModeFactory {
@@ -23,7 +25,6 @@ const GameMode = new GameModeFactory();
  * Manager class which handles the general interaction between game elements.
  */
 export class GameManager {
-  boardDimension = [8, 8];
   isPaused = false;
   /**
    * @type {Piece[]}
@@ -49,10 +50,15 @@ export class GameManager {
    */
   currentPlayer = null;
 
-
+  /**
+   * 
+   * @param {Application} app 
+   * @param {GameRenderer} renderer 
+   */
   constructor(app, renderer) {
     this.app = app;
     this.renderer = renderer;
+    this.boardDimension = [app.screen.width / 64, app.screen.height / 64];
     this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
     this.moveValidator = new MoveValidator(this.board);
     this.gameMode = GameMode.AIVsAI;
@@ -177,19 +183,19 @@ export class GameManager {
     return true;
   }
 
-  performTileOperation(a, b, operation){
+  performTileOperation(a, b, operation) {
     let res;
     if (operation === 'AND') {
       res = Operations.and(a, b)
     } else if (operation === 'OR') {
-      res = Operations.or(a,b)
+      res = Operations.or(a, b)
     } else if (operation === 'XOR') {
-      res = Operations.xor(a,b)
+      res = Operations.xor(a, b)
     } else if (operation === 'NAND') {
-      res = Operations.nand(a,b)
+      res = Operations.nand(a, b)
     }
 
-    console.log(a.toString()+ " "+operation +" " + b.toString() +" = " +res.toString())
+    console.log(a.toString() + " " + operation + " " + b.toString() + " = " + res.toString())
 
     return res;
   }
@@ -317,7 +323,7 @@ export class GameManager {
 
     const tile = move.destTile;
     //tint the tile green
-    tile.tint =  0x00ff00;
+    tile.tint = 0x00ff00;
 
     const destination = {
       x: tile.x + this.board.x,
