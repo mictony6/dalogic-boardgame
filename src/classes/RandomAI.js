@@ -1,4 +1,3 @@
-import { GameManager } from "./GameManager";
 import { Player } from "./Player";
 
 export class RandomAI extends Player {

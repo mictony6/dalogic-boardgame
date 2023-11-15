@@ -1,7 +1,7 @@
 import { Tile } from "./Tile";
 import { Application, Container } from "pixi.js";
 import { Move } from "./Move";
-import { Piece } from "./Piece";
+
 
 /**
  * A class for the game board. This handles all logic for the tiles and creating moves that are in bounds of the board.
@@ -54,7 +54,7 @@ export class GameBoard extends Container {
   /**
    * Creates a move and specifies if its in bounds of the board or not.
    * @param {Piece} piece 
-   * @param {Number[]} dest  [row, col]
+   * @param dest {Array} [row, col]
    * @returns {Move}
    */
   createMove(piece, dest) {

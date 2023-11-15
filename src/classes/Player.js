@@ -1,5 +1,3 @@
-import { Move } from "./Move";
-import { Piece } from "./Piece";
 
 export class Player {
   /**
@@ -77,7 +75,7 @@ export class Player {
    */
   onCapture(move) {
     const player = move.piece.player;
-    console.log(player.name + " captured " + move.destTile.piece.player.name + "'s piece");
+
 
   }
 

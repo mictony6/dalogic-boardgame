@@ -1,12 +1,11 @@
 import { GameBoard } from "./GameBoard";
-import { Piece } from "./Piece";
 import { Player } from "./Player";
 import { MoveValidator } from "./MoveValidator";
 import { RandomAI } from "./RandomAI";
-import { Move } from "./Move";
-import { Tile } from "./Tile";
 import { StateManager } from "./StateManager";
 import { InputManager } from "./InputManager";
+import {Piece} from "./Piece";
+import {Operations} from "./Operations";
 
 
 class GameModeFactory {
@@ -142,6 +141,7 @@ export class GameManager {
     // run player logic for capturing a piece
     this.currentPlayer.onCapture(move)
 
+
     /**
      * @type {Piece}
      */
@@ -164,6 +164,11 @@ export class GameManager {
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
 
+    capturingPiece.pieceValue = this.performTileOperation(capturingPiece.pieceValue, targetPiece.pieceValue, move.destTile.operation);
+
+
+
+
     // update capturing piece and its corresponding tile locations
 
     capturingPiece.leaveCurrentTile()
@@ -173,6 +178,23 @@ export class GameManager {
     this.switchPlayerTurn();
     this.renderer.removeElement(targetPiece);
     return true;
+  }
+
+  performTileOperation(a, b, operation){
+    let res;
+    if (operation === 'AND') {
+      res = Operations.and(a, b)
+    } else if (operation === 'OR') {
+      res = Operations.or(a,b)
+    } else if (operation === 'XOR') {
+      res = Operations.xor(a,b)
+    } else if (operation === 'NAND') {
+      res = Operations.nand(a,b)
+    }
+
+    console.log(a.toString()+ " "+operation +" " + b.toString() +" = " +res.toString())
+
+    return res;
   }
 
   /**
@@ -368,6 +390,21 @@ export class GameManager {
    * @param delta 
    */
   update(delta) {
+    /**
+     * render piece value on top of the pieces
+     * @type {Piece[]}
+     */
+    let pieces = [...this.players[0].ownedPieces, ...this.players[1].ownedPieces];
+    pieces.forEach(piece => {
+      piece.renderPieceValue();
+    });
+
+    let tiles = this.board.tiles.flat();
+
+    tiles.forEach(tile => {
+      tile.renderOperation();
+    })
+
     if (this.stateManager.transitions[this.stateManager.currentState] && this.stateManager.transitions[this.stateManager.currentState].update) {
       this.stateManager.transitions[this.stateManager.currentState].update(delta);
     }
