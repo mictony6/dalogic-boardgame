@@ -5,6 +5,9 @@ import { MoveValidator } from "./MoveValidator";
 import { RandomAI } from "./RandomAI";
 import { Move } from "./Move";
 import { Tile } from "./Tile";
+import {StateManager} from "./StateManager";
+import {InputManager} from "./InputManager";
+
 
 
 class GameModeFactory {
@@ -56,7 +59,9 @@ export class GameManager {
         // Add more states as needed...
       },
     };
-    this.gameMode = GameMode.AIVsAI;
+    this.gameMode = GameMode.PlayerVsAI;
+    this.stateManager = new StateManager("playing");
+    this.inputManager = new InputManager(this, this.stateManager);
 
   }
 
@@ -64,17 +69,6 @@ export class GameManager {
     // Initialize your game here
     this.loadGame();
     this.app.ticker.add(this.update.bind(this));
-  }
-
-  loadTiles() {
-    this.board.tiles.flat().forEach(tile => {
-      tile.on('pointerdown', () => {
-        if (this.isPaused) {
-          return; // Ignore input if the game is paused
-        }
-        this.selectTile(tile);
-      });
-    });
   }
 
 
@@ -90,52 +84,11 @@ export class GameManager {
       this.pieces.push(piece);
       this.renderer.addElement(piece);
 
-      piece.on('pointerdown', () => {
-        if (this.isPaused) {
-          return; // Ignore input if the game is paused
-        }
-        this.selectPiece(piece);
-      });
-
       player.ownedPieces.push(piece);
 
     }
   }
 
-  /**
-   * Gets called when player selects a tile
-   * @param tile {Tile}
-   */
-  selectTile(tile) {
-    if (!this.selectedPiece) {
-
-      throw Error("No piece selected")
-    }
-
-
-    let isInValidMoves = false;
-    for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
-      let move = this.currentPlayer.validMoves[i];
-      if (move.destTile === tile) {
-        if (move.isCaptureMove) {
-          this.performCapture(move);
-          this.resetTileTints();
-          isInValidMoves = true;
-          break;
-        }
-
-        this.switchPlayerTurn();
-        this.executeMove(move);
-        isInValidMoves = true;
-        break;
-      }
-    }
-
-
-    if (!isInValidMoves) {
-      this.deselectPiece();
-    }
-  }
 
 
   loadGame() {
@@ -176,7 +129,8 @@ export class GameManager {
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 2);
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
-    this.loadTiles();
+
+    this.inputManager.initialize();
 
     this.currentPlayer = player2;
     this.switchPlayerTurn();
@@ -233,12 +187,7 @@ export class GameManager {
    */
   selectPiece(piece) {
     if (piece.player !== this.currentPlayer) {
-
-
-      // if (!this.performCapture(this.selectedPiece, piece)){
-
       this.resetTileTints();
-      // }
       return;
     }
 
@@ -258,13 +207,45 @@ export class GameManager {
     }
   }
 
+  /**
+   * Gets called when player selects a tile
+   * @param tile {Tile}
+   */
+  selectTile(tile) {
+    if (!this.selectedPiece) {
+
+      throw Error("No piece selected")
+    }
+
+    let isInValidMoves = false;
+    for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
+      let move = this.currentPlayer.validMoves[i];
+      if (move.destTile === tile) {
+        if (move.isCaptureMove) {
+          this.performCapture(move);
+          this.resetTileTints();
+          isInValidMoves = true;
+          break;
+        }
+
+        this.switchPlayerTurn();
+        this.executeMove(move);
+        isInValidMoves = true;
+        break;
+      }
+    }
+
+
+    if (!isInValidMoves) {
+      this.deselectPiece();
+    }
+  }
+
   resetTileTints() {
     this.board.tiles.flat().forEach(tile => {
       tile.tint = tile.isBlack ? 0x000000 : 0xffffff;
     });
   }
-
-
 
 
   getValidMoves(piece) {
@@ -278,14 +259,11 @@ export class GameManager {
    * @returns {Array<Move>}
    */
   getAllMoves(piece) {
-    // // players can only move forward
+    // players can only move forward
     return [
       this.board.createMove(piece, [piece.row + piece.player.direction, piece.col + 1]),
       this.board.createMove(piece, [piece.row + piece.player.direction, piece.col - 1])
-    ]
-
-
-
+    ];
   }
 
   /**
@@ -298,11 +276,7 @@ export class GameManager {
     this.resetTileTints();
 
     this.currentPlayer.validMoves = this.getValidMoves(piece);
-
-
-    // this.filterCaptureMoves();
     this.currentPlayer.validMoves.forEach(move => {
-
       // check if capture move
       if (this.moveValidator.validateCaptureMove(move)) {
         move.isCaptureMove = true;
@@ -311,7 +285,6 @@ export class GameManager {
       let tile = move.destTile;
       tile.tint = 0x00ff00; // Apply tint to valid tiles
     });
-
   }
 
 
@@ -371,8 +344,10 @@ export class GameManager {
 
     // set the previous players pieces eventMode to none
     this.currentPlayer.disable()
+
     // set current player to the other player
     this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
+
     if (this.currentPlayer instanceof RandomAI) {
       this.board.disableTiles();
       this.currentPlayer.disable();
