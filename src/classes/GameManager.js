@@ -220,7 +220,6 @@ export class GameManager {
     this.currentPlayer.onCapture(move)
     this.eventManager.trigger(new ScoreEvent(capturingPiece.player))
 
-    this.switchPlayerTurn();
     this.renderer.removeElement(targetPiece);
     this.pieces = this.pieces.filter(piece => piece !== targetPiece)
     targetPiece.destroy();
@@ -292,7 +291,6 @@ export class GameManager {
           break;
         }
 
-        this.switchPlayerTurn();
         this.executeMove(move);
         isInValidMoves = true;
         break;
@@ -366,57 +364,9 @@ export class GameManager {
    */
   executeMove(move) {
     this.currentMove = move;
-
-    const tile = move.destTile;
-    //tint the tile green
-    tile.tint = 0x00ff00;
-
-    const destination = {
-      x: tile.x + this.board.x,
-      y: tile.y + this.board.y,
-    };
-
-    const startingPosition = {
-      x: this.selectedPiece.x,
-      y: this.selectedPiece.y,
-    };
-
-    const animationDuration = 250; // Duration in milliseconds
-
-    let elapsedTime = 0;
     this.stateManager.currentState = "moving"
-
-
-
-    // // Linear interpolation function
-    // function lerp(start, end, t) {
-    //   return start + t * (end - start);
-    // }
-    // const moveFunction = (delta) => {
-
-    //   elapsedTime += (delta / 60) * 1000;
-    //   if (elapsedTime >= animationDuration) {
-    //     piece.row = tile.row;
-    //     piece.col = tile.col;
-    //     piece.leaveCurrentTile();
-    //     piece.occupyTile(tile);
-    //     this.deselectPiece();
-    //     this.app.ticker.remove(moveFunction); // Remove the update listener
-
-    //   } else {
-    //     const t = elapsedTime / animationDuration;
-    //     piece.x = lerp(startingPosition.x, destination.x, t);
-    //     piece.y = lerp(startingPosition.y, destination.y, t);
-    //   }
-    // };
-    // this.app.ticker.add(moveFunction);
-
   }
 
-  lerp(a, b, point) {
-    return (b - a) * point
-
-  }
 
   moveToward(from, to, delta) {
 
@@ -440,6 +390,7 @@ export class GameManager {
   }
 
   animateMove() {
+    if (this.isPaused) return;
     let move = this.currentMove;
     const tile = move.destTile;
     const piece = this.selectedPiece;
@@ -451,12 +402,7 @@ export class GameManager {
       y: tile.y + this.board.y,
     };
 
-    const startingPosition = {
-      x: this.selectedPiece.x,
-      y: this.selectedPiece.y,
-    };
-
-    const SPEED = 10;
+    const SPEED = 5;
     let deltaTime = Ticker.shared.deltaTime;
     piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime)
     piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime)
@@ -469,7 +415,7 @@ export class GameManager {
       piece.occupyTile(tile);
       this.deselectPiece();
       this.currentMove = null;
-      this.stateManager.currentState = "playing"
+      this.stateManager.currentState = "switchingTurn"
     }
 
 
@@ -481,6 +427,7 @@ export class GameManager {
    * Switches the current player. If the player is an AI, calls their respective perform() method.
    */
   switchPlayerTurn() {
+    console.log("switching turn");
 
 
     // set the previous players pieces eventMode to none
@@ -499,6 +446,8 @@ export class GameManager {
       this.currentPlayer.enable()
 
     }
+
+    this.stateManager.currentState = "playing";
   }
 
 
@@ -545,10 +494,13 @@ export class GameManager {
  * @param delta 
  */
   updatePaused(delta) {
-    //.
+
     if (!this.isPaused) {
       console.log("Game Resumed")
-
+      if (this.currentMove) {
+        this.stateManager.currentState = 'moving';
+        return
+      }
       this.stateManager.currentState = 'playing';
     }
   }

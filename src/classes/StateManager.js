@@ -1,3 +1,5 @@
+import { GameManager } from "./GameManager";
+
 export class StateManager {
   /**
    *
@@ -18,6 +20,9 @@ export class StateManager {
       paused: {
         update: manager.updatePaused.bind(manager),
       },
+      switchingTurn: {
+        update: manager.switchPlayerTurn.bind(manager),
+      }
       // Add more states as needed...
     }
   }

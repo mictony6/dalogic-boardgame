@@ -77,7 +77,6 @@ export class Player {
     const player = move.piece.player;
 
     this.addScore(move.piece.pieceValue);
-    console.log(`Player ${player.name} captured a piece from player ${this.name}!`);
     console.log(`Player ${player.name} score is now ${player.score}`);
     this.captureMoves.push(move);
     this.capturedPieces.push(move.capturedPiece);

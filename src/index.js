@@ -15,8 +15,8 @@ const scoreBoard = document.getElementById("scores");
 
 const app = new PIXI.Application({
   background: '#74bbde',
-  width: 64 * 5,
-  height: 64 * 5,
+  width: 64 * 8,
+  height: 64 * 8,
   antialias: true,
   sharedTicker: true
 });
@@ -96,7 +96,6 @@ function onScore(e) {
     const scoreNode = playerElement.firstChild;
     if (scoreNode) {
       scoreNode.nodeValue = `${player.name}: ${player.score}`;
-      console.log(player.score);
     } else {
       console.error(`Score node not found for player ${player.name}`);
     }
