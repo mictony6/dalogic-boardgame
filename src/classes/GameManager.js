@@ -8,6 +8,8 @@ import { Piece } from "./Piece";
 import { Operations } from "./Operations";
 import { Application, Renderer } from "pixi.js";
 import { GameRenderer } from "./GameRenderer";
+import { GameEventManager } from "./GameEventManager";
+import { ScoreEvent } from "./GameEvent";
 
 
 class GameModeFactory {
@@ -64,16 +66,22 @@ export class GameManager {
     this.gameMode = GameMode.AIVsAI;
     this.stateManager = new StateManager(this, "playing");
     this.inputManager = new InputManager(this, this.stateManager);
+    this.eventManager = new GameEventManager();
 
   }
 
   start() {
-    // Initialize your game here
-    this.loadGame();
     this.app.ticker.add(this.update.bind(this));
   }
 
+  /**
+   * 
+   * @param {Player} player 
+   * @param {Number} startingRow 
+   */
   loadPiecesForPlayer(player, startingRow) {
+    let targetSum = 5;
+
     for (let col = 0; col < this.board.columns; col++) {
       const tile = this.board.getTile(startingRow, col);
       if (tile.isBlack) continue;
@@ -88,7 +96,9 @@ export class GameManager {
       player.ownedPieces.push(piece);
 
     }
+
   }
+
 
 
 
@@ -130,6 +140,8 @@ export class GameManager {
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 2);
     this.loadPiecesForPlayer(player2, 0);
     this.loadPiecesForPlayer(player2, 1);
+    player1.initPieces();
+    player2.initPieces();
 
     this.inputManager.initialize();
 
@@ -166,8 +178,7 @@ export class GameManager {
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
     capturingPiece.pieceValue = this.performTileOperation(capturingPiece.pieceValue, targetPiece.pieceValue, move.destTile.operation);
-
-
+    this.eventManager.trigger(new ScoreEvent(capturingPiece.player))
 
 
     // update capturing piece and its corresponding tile locations

@@ -15,7 +15,7 @@ export class Operations {
   }
 
   static not(a) {
-    return Operations.truncateBits(~a, 1);
+    return Operations.truncateBits(~a, 2);
   }
 
   // Function to cut off extra bits and keep only a specified number of bits

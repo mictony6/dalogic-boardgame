@@ -89,5 +89,39 @@ export class Player {
     this.score += score;
   }
 
+  initPieces() {
+    const targetSum = 10;
+
+    // Add the current pieces' values to the score
+    this.ownedPieces.forEach(piece => {
+      this.addScore(piece.pieceValue);
+    });
+
+    let travelled = new Set();
+
+    // Continue adjusting the pieces until the sum reaches the target
+    while (this.score !== targetSum) {
+      let index = Math.floor(Math.random() * this.ownedPieces.length);
+
+      // Skip if the index has already been travelled
+      if (travelled.has(index)) continue;
+
+      travelled.add(index);
+
+      let value = this.ownedPieces[index].pieceValue;
+      let diff = targetSum - this.score;
+
+      // Adjust the pieceValue with clamp function
+      value = Math.min(3, Math.max(value + diff, 0));
+
+      // Update the score directly
+      this.addScore(value - this.ownedPieces[index].pieceValue);
+
+      // Update the pieceValue
+      this.ownedPieces[index].pieceValue = value;
+    }
+  }
+
+
 
 }

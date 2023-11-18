@@ -41,7 +41,7 @@ button:active{
 }
 
 
-div{
+#leftSideBar{
   display: flex;
   flex-direction: column;
   margin: 1rem 1.5rem;

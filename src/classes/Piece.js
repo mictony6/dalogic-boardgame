@@ -7,6 +7,8 @@ export class Piece extends Sprite {
    * @type {Player}
    */
   player = null;
+  _binRep = "";
+  _pieceValue = 0;
   constructor(row, col, tileSize, app) {
 
     let texture = new Graphics();
@@ -31,8 +33,10 @@ export class Piece extends Sprite {
      * @type {Tile}
      */
     this.tile = null;
-    // generate random number between 0 and 1
-    this._pieceValue = Math.floor(Math.random() * 2);
+    this.binRep = "00";
+    // generate random number between 0 and 3
+    this.pieceValue = Math.floor(Math.random() * 4);
+
     this.eventMode = 'static'
 
 
@@ -58,11 +62,21 @@ export class Piece extends Sprite {
   }
 
   get binRep() {
-    return this._pieceValue.toString(2);
+    return this._binRep;
+  }
+
+  set binRep(val){
+    this._binRep = val;
   }
 
   set pieceValue(val) {
     this._pieceValue = val;
+    // return a string representation of the value in binary, add padding if value is 1 or 0
+    let binaryString = this._pieceValue.toString(2);
+    // Calculate the number of leading zeros needed for padding
+    const paddingZeros = Math.max(0, 2 - binaryString.length);
+    // Add leading zeros for padding
+    this._binRep =  '0'.repeat(paddingZeros) + binaryString;
   }
 
   assignPlayer(player) {

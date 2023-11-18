@@ -1,3 +1,4 @@
+import { GameManager } from "./GameManager";
 import { Player } from "./Player";
 
 export class RandomAI extends Player {
@@ -5,7 +6,11 @@ export class RandomAI extends Player {
     super(name, id, color);
 
   }
-
+  /**
+   * 
+   * @param {GameManager} manager 
+   * @returns 
+   */
   async selectAIPiece(manager) {
     // wait for game to unpause
     while (manager.isPaused) {
@@ -16,18 +21,19 @@ export class RandomAI extends Player {
       setTimeout(() => {
         //make sure to select only piece with than can move
         let count = 1;
+        let checkedPieces = new Set();
 
-        let piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
-        while (manager.getValidMoves(piece).length === 0) {
-
-          if (count > this.ownedPieces.length) {
-            reject("No more available piece at count: " + count)
-            break;
-          }
+        let piece;
+        while (count <= this.ownedPieces.length) {
           piece = this.ownedPieces[Math.floor(Math.random() * this.ownedPieces.length)];
+          if (checkedPieces.has(piece)) continue;
+          checkedPieces.add(piece);
+          if (manager.getValidMoves(piece).length !== 0) {
+            resolve(piece);
+          }
           count++;
         }
-        resolve(piece);
+        reject("No more available piece at count: " + count)
       }, 400);
     });
   }
