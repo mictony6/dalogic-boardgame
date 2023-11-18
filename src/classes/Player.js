@@ -90,7 +90,7 @@ export class Player {
   }
 
   initPieces() {
-    const targetSum = 10;
+    const targetSum = Math.floor((this.ownedPieces.length * 3) / 2)
 
     // Add the current pieces' values to the score
     this.ownedPieces.forEach(piece => {
