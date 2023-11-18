@@ -13,7 +13,7 @@ export class RandomAI extends Player {
    */
   async selectAIPiece(manager) {
     // wait for game to unpause
-    while (manager.isPaused) {
+    while (manager.stateManager.currentState === "paused") {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     return new Promise((resolve, reject) => {
@@ -29,9 +29,14 @@ export class RandomAI extends Player {
           if (checkedPieces.has(piece)) continue;
           checkedPieces.add(piece);
           if (manager.getValidMoves(piece).length !== 0) {
-            resolve(piece);
+            break;
           }
+          piece = null
           count++;
+        }
+
+        if (piece) {
+          resolve(piece);
         }
         reject("No more available piece at count: " + count)
       }, 400);
@@ -40,7 +45,7 @@ export class RandomAI extends Player {
 
   async selectAITile(manager) {
     // wait for game to unpause
-    while (manager.isPaused) {
+    while (manager.stateManager.currentState === "paused") {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     return new Promise((resolve) => {
@@ -62,7 +67,7 @@ export class RandomAI extends Player {
   async perform(manager) {
 
     // wait for game to unpause
-    while (manager.isPaused) {
+    while (manager.stateManager.currentState === "paused") {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     try {
@@ -76,6 +81,12 @@ export class RandomAI extends Player {
 
 
   }
+
+  disable() {
+    return;
+  }
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { RandomAI } from "./RandomAI";
+
 export class InputManager {
   /**
    *
@@ -26,15 +28,31 @@ export class InputManager {
   }
 
   initializePieces() {
-    let pieces = this.gameManager.pieces;
+    let p1 = this.gameManager.players[0]
 
-    pieces.forEach(piece => {
-      piece.on("pointerdown", () => {
-        if (!this.stateManager.isPaused) {
-          this.handlePieceClick(piece);
-        }
+    if (!(p1 instanceof RandomAI)) {
+      p1.owwnedPieces.forEach(piece => {
+        piece.on("pointerdown", () => {
+          if (!this.stateManager.isPaused) {
+            this.handlePieceClick(piece);
+          }
+        })
+        piece.eventMode = "static"
       })
-    })
+    }
+
+    let p2 = this.gameManager.players[1];
+
+    if (!(p2 instanceof RandomAI)) {
+      p2.owwnedPieces.forEach(piece => {
+        piece.on("pointerdown", () => {
+          if (!this.stateManager.isPaused) {
+            this.handlePieceClick(piece);
+          }
+        })
+        piece.eventMode = "static"
+      })
+    }
   }
 
 

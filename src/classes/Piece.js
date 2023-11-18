@@ -37,7 +37,7 @@ export class Piece extends Sprite {
     // generate random number between 0 and 3
     this.pieceValue = Math.floor(Math.random() * 4);
 
-    this.eventMode = 'static'
+    this.eventMode = 'none'
 
 
 

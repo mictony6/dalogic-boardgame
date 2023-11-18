@@ -94,9 +94,7 @@ export class GameManager {
     this.currentPlayer = this.players[1];
     this.switchPlayerTurn();
     this.eventManager.trigger(new ReadyEvent(this))
-    this.app.ticker.autoStart = false;
     this.app.ticker.add(this.update.bind(this));
-    this.app.ticker.start()
   }
 
 
@@ -148,7 +146,6 @@ export class GameManager {
     this.loadPiecesForPlayer(player2, 1);
     player1.initPieces();
     player2.initPieces();
-
     this.inputManager.initialize();
 
 
@@ -438,7 +435,6 @@ export class GameManager {
 
     if (this.currentPlayer instanceof RandomAI) {
       this.board.disableTiles();
-      this.currentPlayer.disable();
       this.currentPlayer.perform(this).then(() => { })
     } else {
       // set the current players pieces eventMode to static
