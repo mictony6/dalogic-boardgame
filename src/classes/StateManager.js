@@ -17,6 +17,9 @@ export class StateManager {
       moving: {
         update: manager.animateMove.bind(manager),
       },
+      capturing: {
+        update: manager.updateCapturing.bind(manager),
+      },
       paused: {
         update: manager.updatePaused.bind(manager),
       },

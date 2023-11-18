@@ -176,53 +176,6 @@ export class GameManager {
 
   }
 
-  /**
-   *
-   * @param move {Move}
-   * @return Boolean
-   */
-  async performCapture(move) {
-    /**
-     * @type {Piece}
-     */
-    let capturingPiece = move.piece;
-
-    /**
-     * @type {Piece}
-     */
-    let targetPiece = move.destTile.piece;
-    move.capturedPiece = targetPiece;
-
-    // disable target piece's input detection
-    targetPiece.eventMode = 'none';
-
-
-    // remove target piece from players owned piece set
-    targetPiece.player.freePiece(targetPiece);
-
-    // free tile from target piece
-    targetPiece.leaveCurrentTile();
-
-    move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
-    capturingPiece.pieceValue = this.performTileOperation(capturingPiece.pieceValue, targetPiece.pieceValue, move.destTile.operation);
-
-
-    // update capturing piece and its corresponding tile locations
-
-    capturingPiece.leaveCurrentTile()
-    capturingPiece.occupyTile(move.destTile);
-    this.executeMove(move);
-
-    // run player logic for capturing a piece
-    this.currentPlayer.onCapture(move)
-    this.eventManager.trigger(new ScoreEvent(capturingPiece.player))
-
-    this.renderer.removeElement(targetPiece);
-    this.pieces = this.pieces.filter(piece => piece !== targetPiece)
-    targetPiece.destroy();
-    targetPiece = null;
-    return true;
-  }
 
   performTileOperation(a, b, operation) {
     let res;
@@ -355,6 +308,7 @@ export class GameManager {
   }
 
 
+
   /**
    * Executes a move and animates the piece. Note: This does not check if the move is valid.
    * @param move {Move}
@@ -399,10 +353,7 @@ export class GameManager {
       y: tile.y + this.board.y,
     };
 
-    const SPEED = 5;
-    let deltaTime = Ticker.shared.deltaTime;
-    piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime)
-    piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime)
+    this._movePieceTowards(piece, destination);
 
     if (piece.x === destination.x && piece.y === destination.y) {
 
@@ -421,12 +372,21 @@ export class GameManager {
   }
 
   /**
+   * Private function to move the piece a bit towards the destination in a certain speed
+   * @param {Piece} piece 
+   * @param {Object} destination 
+   */
+  _movePieceTowards(piece, destination) {
+    const SPEED = 5;
+    let deltaTime = Ticker.shared.deltaTime;
+    piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime);
+    piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime);
+  }
+
+  /**
    * Switches the current player. If the player is an AI, calls their respective perform() method.
    */
   switchPlayerTurn() {
-    console.log("switching turn");
-
-
     // set the previous players pieces eventMode to none
     this.currentPlayer.disable()
 
@@ -501,5 +461,79 @@ export class GameManager {
     }
   }
 
+  /**
+ *
+ * @param move {Move}
+ */
+  performCapture(move) {
+    //tint the tile green
+    move.destTile.tint = 0x00ff00;
+
+    move.capturedPiece = move.destTile.piece
+    // Get the destination tile for the capturing piece
+    move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+
+    this.currentMove = move;
+    this.stateManager.currentState = "capturing"
+  }
+
+  updateCapturing() {
+    if (this.isPaused) return;
+
+    const move = this.currentMove;
+    const piece = move.piece;
+    const targetPiece = move.capturedPiece
+    const tile = move.destTile;
+
+    // remove the targetPiece from the renderer
+    this.renderer.removeElement(targetPiece);
+
+    const destination = {
+      x: tile.x + this.board.x,
+      y: tile.y + this.board.y,
+    };
+
+    // move the piece a bit towards the destination
+    this._movePieceTowards(piece, destination);
+
+    if (piece.x === destination.x && piece.y === destination.y) {
+
+      piece.row = tile.row;
+      piece.col = tile.col;
+      piece.leaveCurrentTile();
+      piece.occupyTile(tile);
+      this.deselectPiece();
+      this.currentMove = null;
+
+      // Disable target piece's input detection and remove it from the player's owned piece set
+      targetPiece.eventMode = 'none';
+      targetPiece.player.freePiece(targetPiece);
+
+      // Free the tile from the target piece
+      targetPiece.leaveCurrentTile();
+      // Update capturing piece and its corresponding tile locations
+      piece.pieceValue = this.performTileOperation(
+        piece.pieceValue,
+        targetPiece.pieceValue,
+        move.destTile.operation
+      );
+      piece.leaveCurrentTile();
+      piece.occupyTile(move.destTile);
+
+
+      // Run player logic for capturing a piece
+      this.currentPlayer.onCapture(move);
+
+      // Trigger a score event for the capturing player
+      this.eventManager.trigger(new ScoreEvent(piece.player));
+
+      // Remove the target piece from the renderer and the pieces array
+      this.pieces = this.pieces.filter(piece => piece !== targetPiece);
+
+      this.stateManager.currentState = "switchingTurn";
+    }
+  }
 
 }
+
+

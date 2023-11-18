@@ -15,8 +15,8 @@ const scoreBoard = document.getElementById("scores");
 
 const app = new PIXI.Application({
   background: '#74bbde',
-  width: 64 * 8,
-  height: 64 * 8,
+  width: 64 * 5,
+  height: 64 * 5,
   antialias: true,
   sharedTicker: true
 });
