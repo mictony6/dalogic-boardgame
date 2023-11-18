@@ -19,3 +19,14 @@ export class ScoreEvent extends GameEvent {
     this.scoringPlayer = scoringPlayer
   }
 }
+
+export class ReadyEvent extends GameEvent {
+  /**
+ * 
+ * @param {GameManager} manager 
+ */
+  constructor(manager) {
+    super("ready", 1);
+    this.manager = manager;
+  }
+}

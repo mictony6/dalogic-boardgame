@@ -72,8 +72,6 @@ export class RandomAI extends Player {
       manager.selectTile(randomMove.destTile);
     } catch (e) {
       console.error(e);
-      console.log(manager.currentPlayer.name + " passing");
-      manager.switchPlayerTurn();
     }
 
 

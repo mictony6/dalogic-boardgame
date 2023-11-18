@@ -2,21 +2,23 @@ import * as PIXI from 'pixi.js';
 import './style.css';
 import { GameManager } from "./classes/GameManager";
 import { GameRenderer } from "./classes/GameRenderer";
-import { ScoreEvent } from './classes/GameEvent';
+import { ReadyEvent, ScoreEvent } from './classes/GameEvent';
 
 
 
+const startButton = document.getElementById('startButton');
 const pauseButton = document.getElementById('pauseButton');
-const reloadTileButton = document.getElementById('reloadTiles');
+const resetButton = document.getElementById('resetButton');
 const passButton = document.getElementById('passButton');
 const centerDiv = document.getElementById("center");
 const scoreBoard = document.getElementById("scores");
 
 const app = new PIXI.Application({
   background: '#74bbde',
-  width: 64 * 8,
-  height: 64 * 8,
+  width: 64 * 5,
+  height: 64 * 5,
   antialias: true,
+  sharedTicker: true
 });
 
 globalThis.__PIXI_APP__ = app;
@@ -30,9 +32,9 @@ if (canvasStyle instanceof CSSStyleDeclaration) {
   console.error('canvas style is not an instance of CSSStyleDeclaration');
 }
 
-const renderer = new GameRenderer(app);
 
-const gameManager = new GameManager(app, renderer);
+
+const gameManager = new GameManager(app);
 const gameEventManager = gameManager.eventManager;
 
 
@@ -45,9 +47,14 @@ if (pauseButton) {
   console.error('Pause button not found!');
 }
 
-if (reloadTileButton) {
-  reloadTileButton.onclick = () => {
-    gameManager.board.regenerateTileOperations()
+if (resetButton) {
+  resetButton.onclick = () => {
+    gameManager.stateManager.setPaused(true);
+    gameManager.reset();
+    gameManager.loadPlayers();
+
+    gameManager.loadGame();
+    gameManager.start()
   }
 }
 
@@ -57,20 +64,24 @@ if (passButton) {
   }
 }
 
-gameManager.loadGame();
+if (startButton) {
+  startButton.onclick = () => {
+    gameManager.loadPlayers();
 
-const players = gameManager.players;
+    gameManager.loadGame();
+
+    gameManager.start()
+
+
+
+
+  }
+
+
+}
+
+
 const playerElements = []
-players.forEach(player => {
-  let element = document.createElement("div");
-  element.id = `player${player.id}`
-
-  element.innerHTML = `
-    ${player.name}: ${player.score}
-  `
-  scoreBoard.append(element)
-  playerElements.push(element);
-})
 
 /**
  * Handle the 'score' event.
@@ -85,6 +96,7 @@ function onScore(e) {
     const scoreNode = playerElement.firstChild;
     if (scoreNode) {
       scoreNode.nodeValue = `${player.name}: ${player.score}`;
+      console.log(player.score);
     } else {
       console.error(`Score node not found for player ${player.name}`);
     }
@@ -93,7 +105,29 @@ function onScore(e) {
   }
 }
 
+function onGameReady(e) {
+  const players = gameManager.players;
+
+  // Clear existing player elements
+  playerElements.forEach(element => {
+    scoreBoard.removeChild(element);
+  });
+  playerElements.length = 0; // Clear the array
+
+  players.forEach(player => {
+    let element = document.createElement("div");
+    element.id = `player${player.id}`;
+    element.innerHTML = `${player.name}: ${player.score}`;
+    playerElements.push(element);
+  });
+
+  scoreBoard.append(...playerElements);
+}
+
 
 gameEventManager.on("score", onScore)
+gameEventManager.on("ready", onGameReady)
 
-gameManager.start();
+
+
+

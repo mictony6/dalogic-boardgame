@@ -6,10 +6,11 @@ import { StateManager } from "./StateManager";
 import { InputManager } from "./InputManager";
 import { Piece } from "./Piece";
 import { Operations } from "./Operations";
-import { Application, Renderer } from "pixi.js";
+import { Application, Renderer, Ticker } from "pixi.js";
 import { GameRenderer } from "./GameRenderer";
 import { GameEventManager } from "./GameEventManager";
-import { ScoreEvent } from "./GameEvent";
+import { ReadyEvent, ScoreEvent } from "./GameEvent";
+import { Move } from "./Move";
 
 
 class GameModeFactory {
@@ -51,16 +52,19 @@ export class GameManager {
    * @type {Player}
    */
   currentPlayer = null;
+  /**
+   * @type {Move}
+   */
+  currentMove = null;
 
   /**
    * 
    * @param {Application} app 
-   * @param {GameRenderer} renderer 
    */
-  constructor(app, renderer) {
+  constructor(app) {
     this.app = app;
-    this.renderer = renderer;
     this.boardDimension = [app.screen.width / 64, app.screen.height / 64];
+    this.renderer = new GameRenderer(app);;
     this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
     this.moveValidator = new MoveValidator(this.board);
     this.gameMode = GameMode.AIVsAI;
@@ -70,39 +74,35 @@ export class GameManager {
 
   }
 
+  reset() {
+    this.app.ticker.remove(this.update.bind(this));
+    this.isPaused = false;
+    this.pieces.forEach(piece => piece.destroy());
+    this.pieces.length = 0;
+    this.selectedPiece = null;
+    this.selectedTile = null;
+    this.currentPlayer = null;
+    this.app.stage.removeChildren(0)
+
+    this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
+    this.moveValidator = new MoveValidator(this.board);
+    this.stateManager = new StateManager(this, "playing");
+    this.inputManager = new InputManager(this, this.stateManager);
+  }
+
   start() {
+    this.currentPlayer = this.players[1];
+    this.switchPlayerTurn();
+    this.eventManager.trigger(new ReadyEvent(this))
+    this.app.ticker.autoStart = false;
     this.app.ticker.add(this.update.bind(this));
-  }
-
-  /**
-   * 
-   * @param {Player} player 
-   * @param {Number} startingRow 
-   */
-  loadPiecesForPlayer(player, startingRow) {
-    let targetSum = 5;
-
-    for (let col = 0; col < this.board.columns; col++) {
-      const tile = this.board.getTile(startingRow, col);
-      if (tile.isBlack) continue;
-      let piece = new Piece(startingRow, col, 64, this.app);
-      piece.assignPlayer(player);
-      piece.occupyTile(tile);
-
-
-      this.pieces.push(piece);
-      this.renderer.addElement(piece);
-
-      player.ownedPieces.push(piece);
-
-    }
-
+    this.app.ticker.start()
   }
 
 
 
-
-  loadGame() {
+  loadPlayers() {
+    this.players.length = 0;
     /**
      * @type {Player}
      */
@@ -133,8 +133,14 @@ export class GameManager {
     } else {
       throw new Error("Invalid game mode")
     }
+  }
 
+
+  loadGame() {
     this.renderer.addElement(this.board);
+
+    let player1 = this.players[0];
+    let player2 = this.players[1];
 
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 1);
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 2);
@@ -145,8 +151,32 @@ export class GameManager {
 
     this.inputManager.initialize();
 
-    this.currentPlayer = player2;
-    this.switchPlayerTurn();
+
+  }
+
+  /**
+ * 
+ * @param {Player} player 
+ * @param {Number} startingRow 
+ */
+  loadPiecesForPlayer(player, startingRow) {
+    let targetSum = 5;
+
+    for (let col = 0; col < this.board.columns; col++) {
+      const tile = this.board.getTile(startingRow, col);
+      if (tile.isBlack) continue;
+      let piece = new Piece(startingRow, col, 64, this.app);
+      piece.assignPlayer(player);
+      piece.occupyTile(tile);
+
+
+      this.pieces.push(piece);
+      this.renderer.addElement(piece);
+
+      player.ownedPieces.push(piece);
+
+    }
+
   }
 
   /**
@@ -178,7 +208,6 @@ export class GameManager {
 
     move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
     capturingPiece.pieceValue = this.performTileOperation(capturingPiece.pieceValue, targetPiece.pieceValue, move.destTile.operation);
-    this.eventManager.trigger(new ScoreEvent(capturingPiece.player))
 
 
     // update capturing piece and its corresponding tile locations
@@ -189,8 +218,13 @@ export class GameManager {
 
     // run player logic for capturing a piece
     this.currentPlayer.onCapture(move)
+    this.eventManager.trigger(new ScoreEvent(capturingPiece.player))
+
     this.switchPlayerTurn();
     this.renderer.removeElement(targetPiece);
+    this.pieces = this.pieces.filter(piece => piece !== targetPiece)
+    targetPiece.destroy();
+    targetPiece = null;
     return true;
   }
 
@@ -331,6 +365,7 @@ export class GameManager {
    * @param move {Move}
    */
   executeMove(move) {
+    this.currentMove = move;
 
     const tile = move.destTile;
     //tint the tile green
@@ -349,30 +384,96 @@ export class GameManager {
     const animationDuration = 250; // Duration in milliseconds
 
     let elapsedTime = 0;
-    const piece = this.selectedPiece;
+    this.stateManager.currentState = "moving"
 
-    // Linear interpolation function
-    function lerp(start, end, t) {
-      return start + t * (end - start);
+
+
+    // // Linear interpolation function
+    // function lerp(start, end, t) {
+    //   return start + t * (end - start);
+    // }
+    // const moveFunction = (delta) => {
+
+    //   elapsedTime += (delta / 60) * 1000;
+    //   if (elapsedTime >= animationDuration) {
+    //     piece.row = tile.row;
+    //     piece.col = tile.col;
+    //     piece.leaveCurrentTile();
+    //     piece.occupyTile(tile);
+    //     this.deselectPiece();
+    //     this.app.ticker.remove(moveFunction); // Remove the update listener
+
+    //   } else {
+    //     const t = elapsedTime / animationDuration;
+    //     piece.x = lerp(startingPosition.x, destination.x, t);
+    //     piece.y = lerp(startingPosition.y, destination.y, t);
+    //   }
+    // };
+    // this.app.ticker.add(moveFunction);
+
+  }
+
+  lerp(a, b, point) {
+    return (b - a) * point
+
+  }
+
+  moveToward(from, to, delta) {
+
+    let diff = to - from;
+
+    let direction = (diff > 0) ? 1 : ((diff < 0) ? -1 : 0);
+
+    // Calculate the absolute difference
+    let abs_diff = Math.abs(diff);
+
+
+    // Check if the absolute difference is less than or equal to the specified delta
+    if (abs_diff <= delta || abs_diff < Number.EPSILON) {
+      // If so, return the target value
+      return to;
+    } else {
+      // Otherwise, calculate the new position by moving towards the target
+      return from + direction * delta;
     }
-    const moveFunction = (delta) => {
 
-      elapsedTime += (delta / 60) * 1000;
-      if (elapsedTime >= animationDuration) {
-        piece.row = tile.row;
-        piece.col = tile.col;
-        piece.leaveCurrentTile();
-        piece.occupyTile(tile);
-        this.deselectPiece();
-        this.app.ticker.remove(moveFunction); // Remove the update listener
+  }
 
-      } else {
-        const t = elapsedTime / animationDuration;
-        piece.x = lerp(startingPosition.x, destination.x, t);
-        piece.y = lerp(startingPosition.y, destination.y, t);
-      }
+  animateMove() {
+    let move = this.currentMove;
+    const tile = move.destTile;
+    const piece = this.selectedPiece;
+    //tint the tile green
+    tile.tint = 0x00ff00;
+
+    const destination = {
+      x: tile.x + this.board.x,
+      y: tile.y + this.board.y,
     };
-    this.app.ticker.add(moveFunction);
+
+    const startingPosition = {
+      x: this.selectedPiece.x,
+      y: this.selectedPiece.y,
+    };
+
+    const SPEED = 10;
+    let deltaTime = Ticker.shared.deltaTime;
+    piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime)
+    piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime)
+
+    if (piece.x === destination.x && piece.y === destination.y) {
+
+      piece.row = tile.row;
+      piece.col = tile.col;
+      piece.leaveCurrentTile();
+      piece.occupyTile(tile);
+      this.deselectPiece();
+      this.currentMove = null;
+      this.stateManager.currentState = "playing"
+    }
+
+
+
 
   }
 

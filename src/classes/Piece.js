@@ -1,4 +1,4 @@
-import {Graphics, Sprite, Text, TextStyle} from "pixi.js";
+import { Graphics, Sprite, Text, TextStyle } from "pixi.js";
 
 // @ts-ignore
 export class Piece extends Sprite {
@@ -65,7 +65,7 @@ export class Piece extends Sprite {
     return this._binRep;
   }
 
-  set binRep(val){
+  set binRep(val) {
     this._binRep = val;
   }
 
@@ -76,7 +76,7 @@ export class Piece extends Sprite {
     // Calculate the number of leading zeros needed for padding
     const paddingZeros = Math.max(0, 2 - binaryString.length);
     // Add leading zeros for padding
-    this._binRep =  '0'.repeat(paddingZeros) + binaryString;
+    this._binRep = '0'.repeat(paddingZeros) + binaryString;
   }
 
   assignPlayer(player) {
@@ -131,6 +131,7 @@ export class Piece extends Sprite {
     // Position text at the center of the circle
     this.text.position.set(centerX, centerY);
   }
+
 
 
 

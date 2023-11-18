@@ -26,7 +26,7 @@ export class InputManager {
   }
 
   initializePieces() {
-    let pieces = [...this.gameManager.players[0].ownedPieces, ...this.gameManager.players[1].ownedPieces]
+    let pieces = this.gameManager.pieces;
 
     pieces.forEach(piece => {
       piece.on("pointerdown", () => {

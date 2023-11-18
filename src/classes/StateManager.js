@@ -12,6 +12,9 @@ export class StateManager {
       playing: {
         update: manager.updatePlaying.bind(manager),
       },
+      moving: {
+        update: manager.animateMove.bind(manager),
+      },
       paused: {
         update: manager.updatePaused.bind(manager),
       },

@@ -2,7 +2,7 @@
 export class Player {
   /**
    *
-   * @type {Array<Move>}
+   * @type {Move[]}
    */
   validMoves = [];
   movesHistory = [];
@@ -122,6 +122,15 @@ export class Player {
     }
   }
 
-
+  reset() {
+    this.validMoves.length = 0;
+    this.movesHistory.length = 0;
+    this.ownedPieces.forEach(piece => piece.destroy())
+    this.ownedPieces.length = 0;
+    this.captureMoves.length = 0;
+    this.capturedPieces.length = 0;
+    this.direction = 0;
+    this.score = 0;
+  }
 
 }
