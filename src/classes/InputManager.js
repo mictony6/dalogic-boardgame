@@ -31,7 +31,7 @@ export class InputManager {
     let p1 = this.gameManager.players[0]
 
     if (!(p1 instanceof RandomAI)) {
-      p1.owwnedPieces.forEach(piece => {
+      p1.ownedPieces.forEach(piece => {
         piece.on("pointerdown", () => {
           if (!this.stateManager.isPaused) {
             this.handlePieceClick(piece);
