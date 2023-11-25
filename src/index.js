@@ -1,8 +1,6 @@
 import * as PIXI from "pixi.js";
 import "./style.css";
 import { GameManager } from "./classes/GameManager";
-import { GameRenderer } from "./classes/GameRenderer";
-import { ReadyEvent, ScoreEvent } from "./classes/GameEvent";
 
 const startButton = document.getElementById("startButton");
 const pauseButton = document.getElementById("pauseButton");
@@ -13,8 +11,8 @@ const scoreBoard = document.getElementById("scores");
 
 const app = new PIXI.Application({
   background: "#74bbde",
-  width: 64 * 5,
-  height: 64 * 5,
+  width: 64 * 8,
+  height: 64 * 8,
   antialias: true,
   autoStart: false,
 });
@@ -44,7 +42,7 @@ if (pauseButton) {
 
 if (passButton) {
   passButton.onclick = () => {
-    gameManager.eventManager.currentState = "switchingTurn";
+    gameManager.switchPlayerTurn();
   };
 }
 
