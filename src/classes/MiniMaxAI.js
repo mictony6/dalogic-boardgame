@@ -2,12 +2,16 @@ import Player from "./Player";
 import { Move } from "./Move";
 
 export default class MiniMaxAI extends Player {
+  constructor(name, id, color, depth) {
+    super(name, id, color);
+    this.depth = depth;
+  }
   selectAIPiece(manager) {}
 
   selectAITile(manager) {}
 
   perform(manager) {
-    const [score, bestMove] = this.minimax(null, 3, true, manager);
+    const [score, bestMove] = this.minimax(null, this.depth, true, manager);
     if (bestMove) {
       manager.selectedPiece = bestMove.piece;
       manager.selectedTile = bestMove.destTile;
@@ -26,7 +30,6 @@ export default class MiniMaxAI extends Player {
    * @return {[Number, Move]}
    */
   minimax(position, depth, maximizingPlayer, manager) {
-    console.log(depth);
     if (depth === 0 || manager.isGameOver()) {
       return [manager.evaluate(), position];
     }
@@ -56,9 +59,7 @@ export default class MiniMaxAI extends Player {
       let minEval = Infinity;
       let bestMove = null;
 
-      let otherPlayer = manager.players.find(
-        (player) => player !== manager.currentPlayer,
-      );
+      let otherPlayer = manager.getOpponent(manager.currentPlayer);
       for (let move of manager.getAllMovesForPlayer(otherPlayer)) {
         const prevPieceValue = move.piece.pieceValue;
 
