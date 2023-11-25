@@ -1,47 +1,48 @@
 export default class MoveValidator {
-    /**
+  /**
    *
    * @param board {GameBoard}
    */
-    constructor(board) {
-        this.board = board;
-    }
+  constructor(board) {
+    this.board = board;
+  }
 
-    /**
+  /**
    *
    * @param move {Move}
    */
-    validateMove(move) {
+  validateMove(move) {
     //check if dest is in bounds
-        if (!move.inBounds) return false;
+    if (!move.inBounds) return false;
 
-        // check if dest tile is occupied
-        if (move.canMoveIntoTile()) {
-            return true;
-        }
-
-        if (this.validateCaptureMove(move)) {
-            return true;
-        }
+    // check if dest tile is occupied
+    if (move.canMoveIntoTile()) {
+      return true;
     }
 
-    /**
+    if (this.validateCaptureMove(move) && move.destTile.occupied) {
+      move.isCaptureMove = true;
+      return true;
+    }
+  }
+
+  /**
    *
    * @param move {Move}
    */
-    validateCaptureMove(move) {
+  validateCaptureMove(move) {
     // if tile across exists
     /**
      * @type {Move}
      */
-        let moveAcross = this.board.createMove(move.piece, [
-            move.destTile.row + move.piece.player.direction,
-            move.destTile.col + move.moveColDiff,
-        ]);
-        if (!moveAcross.inBounds || moveAcross.destTile.occupied) {
-            return false;
-        } else {
-            return move.capturePossible();
-        }
+    let moveAcross = this.board.createMove(move.piece, [
+      move.destTile.row + move.piece.player.direction,
+      move.destTile.col + move.moveColDiff,
+    ]);
+    if (!moveAcross.inBounds || moveAcross.destTile.occupied) {
+      return false;
+    } else {
+      return move.capturePossible();
     }
+  }
 }

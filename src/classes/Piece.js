@@ -1,6 +1,4 @@
-import {
-  Graphics, Sprite, Text, TextStyle,
-} from 'pixi.js';
+import { Graphics, Sprite, Text, TextStyle } from "pixi.js";
 
 // @ts-ignore
 export default class Piece extends Sprite {
@@ -10,7 +8,7 @@ export default class Piece extends Sprite {
    */
   player = null;
 
-  _binRep = '';
+  _binRep = "";
 
   _pieceValue = 0;
 
@@ -35,17 +33,20 @@ export default class Piece extends Sprite {
      * @type {Tile}
      */
     this.tile = null;
-    this.binRep = '00';
+    this.binRep = "00";
     // generate random number between 0 and 3
     this.pieceValue = Math.floor(Math.random() * 4);
 
-    this.eventMode = 'none';
+    this.eventMode = "none";
 
     // Create text
-    this.text = new Text(this.binRep, new TextStyle({
-      fill: 0xffffff,
-      fontSize: 24,
-    }));
+    this.text = new Text(
+      this.binRep,
+      new TextStyle({
+        fill: 0xffffff,
+        fontSize: 24,
+      }),
+    );
 
     // Set text anchor to center
     this.text.anchor.set(0.5);
@@ -73,12 +74,17 @@ export default class Piece extends Sprite {
     // Calculate the number of leading zeros needed for padding
     const paddingZeros = Math.max(0, 2 - binaryString.length);
     // Add leading zeros for padding
-    this._binRep = '0'.repeat(paddingZeros) + binaryString;
+    this._binRep = "0".repeat(paddingZeros) + binaryString;
   }
 
+  /**
+   *
+   * @param player {Player}
+   */
   assignPlayer(player) {
     this.player = player;
     this.tint = player.color;
+    player.ownedPieces.push(this);
   }
 
   set col(val) {

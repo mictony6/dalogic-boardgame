@@ -36,7 +36,10 @@ export default class RandomAI extends Player {
     if (piece) {
       return piece;
     }
-    throw Error(`No more available piece at count: ${count}`);
+    manager.gameOver = true;
+    manager.stateManager.currentState = "gameOver";
+
+    throw Error(`Game Over. No more available piece for ${this.name}`);
   }
 
   async selectAITile(manager) {

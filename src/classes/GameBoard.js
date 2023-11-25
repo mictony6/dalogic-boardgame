@@ -66,7 +66,6 @@ export default class GameBoard extends Container {
         piece.assignPlayer(player1);
         piece.occupyTile(tile1);
 
-        player1.ownedPieces.push(piece);
         this.pieces.push(piece);
         this.addChild(piece);
 
@@ -76,7 +75,6 @@ export default class GameBoard extends Container {
         piece2.assignPlayer(player2);
         piece2.occupyTile(tile2);
 
-        player2.ownedPieces.push(piece2);
         this.pieces.push(piece2);
         this.addChild(piece2);
       }
@@ -100,6 +98,9 @@ export default class GameBoard extends Container {
    * @return {Move}
    */
   createMove(piece, dest) {
+    /**
+     * @type {Move}
+     */
     const move = new Move(piece, dest);
 
     if (

@@ -4,12 +4,12 @@ import MoveValidator from "./MoveValidator";
 import RandomAI from "./RandomAI";
 import StateManager from "./StateManager";
 import InputManager from "./InputManager";
-import Piece from "./Piece";
 import Operations from "./Operations";
 import GameRenderer from "./GameRenderer";
 import GameEventManager from "./GameEventManager";
 import { ReadyEvent, ScoreEvent } from "./GameEvent";
 import GameModeFactory from "./GameModeFactory";
+import MiniMaxAI from "./MiniMaxAI";
 
 const GameMode = new GameModeFactory();
 
@@ -46,6 +46,8 @@ export class GameManager {
    * @type {Move}
    */
   currentMove = null;
+
+  gameOver = false;
 
   /**
    *
@@ -99,7 +101,7 @@ export class GameManager {
       player2 = new Player("Player 2", 2, 0x00b0af);
     } else if (this.gameMode === GameMode.PlayerVsAI) {
       player1 = new Player("Player 1", 1, 0xaf2010);
-      player2 = new RandomAI("Player 2", 2, 0x00b0af);
+      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af);
     } else if (this.gameMode === GameMode.AIVsAI) {
       player1 = new RandomAI("Player 1", 1, 0xaf2010);
       player2 = new RandomAI("Player 2", 2, 0x00b0af);
@@ -147,9 +149,9 @@ export class GameManager {
       res = Operations.nand(a, b);
     }
 
-    console.log(
-      `${a.toString()} ${operation} ${b.toString()} = ${res.toString()}`,
-    );
+    // console.log(
+    //   `${a.toString()} ${operation} ${b.toString()} = ${res.toString()}`,
+    // );
 
     return res;
   }
@@ -245,6 +247,19 @@ export class GameManager {
   }
 
   /**
+   *
+   * @param player {Player}
+   * @return {Move[]}
+   */
+  getAllMovesForPlayer(player) {
+    const moves = [];
+    player.ownedPieces.forEach((piece) => {
+      moves.push(...this.getValidMoves(piece));
+    });
+    return moves;
+  }
+
+  /**
    * Returns all possible diagonal moves for a piece. Does not check if the move is valid.
    * @param piece {Piece}
    * @return {Move[]}
@@ -276,9 +291,6 @@ export class GameManager {
     player.validMoves = this.getValidMoves(piece);
     player.validMoves.forEach((move) => {
       // check if capture move
-      if (this.moveValidator.validateCaptureMove(move)) {
-        move.isCaptureMove = true;
-      }
 
       const tile = move.destTile;
       tile.tint = 0x005f90; // Apply tint to valid tiles
@@ -350,8 +362,10 @@ export class GameManager {
     // set current player to the other player
     this.currentPlayer =
       this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
-
-    if (this.currentPlayer instanceof RandomAI) {
+    if (
+      this.currentPlayer instanceof RandomAI ||
+      this.currentPlayer instanceof MiniMaxAI
+    ) {
       this.board.disableTiles();
     } else {
       // set the current players pieces eventMode to static
@@ -411,8 +425,11 @@ export class GameManager {
       this.stateManager.currentState = "moving";
       return;
     }
-    if (this.currentPlayer instanceof RandomAI) {
-      this.currentPlayer.perform(this).then(() => {});
+    if (
+      this.currentPlayer instanceof RandomAI ||
+      this.currentPlayer instanceof MiniMaxAI
+    ) {
+      this.currentPlayer.perform(this);
     }
   }
 
@@ -459,12 +476,6 @@ export class GameManager {
     const tile = move.destTile;
     tile.tint = 0x00ff00;
 
-    // Remove the target piece from the renderer and the pieces array
-    this.board.removeChild(targetPiece);
-    this.board.pieces = this.board.pieces.filter(
-      (piece) => piece !== targetPiece,
-    );
-
     const destination = {
       x: tile.x + this.board.x,
       y: tile.y + this.board.y,
@@ -473,6 +484,11 @@ export class GameManager {
     // move the piece a bit towards the destination
     this._movePieceTowards(piece, destination);
 
+    // Disable target piece's input detection and remove it from the player's owned piece set
+    targetPiece.eventMode = "none";
+    // also remove it from the board's piece set
+    targetPiece.player.freePiece(targetPiece, this.board);
+
     if (piece.x === destination.x && piece.y === destination.y) {
       piece.row = tile.row;
       piece.col = tile.col;
@@ -480,10 +496,6 @@ export class GameManager {
       piece.occupyTile(tile);
       this.deselectPiece();
       this.currentMove = null;
-
-      // Disable target piece's input detection and remove it from the player's owned piece set
-      targetPiece.eventMode = "none";
-      targetPiece.player.freePiece(targetPiece);
 
       // Free the tile from the target piece
       targetPiece.leaveCurrentTile();
@@ -507,7 +519,19 @@ export class GameManager {
     }
   }
 
+  updateGameOver() {}
+
   evaluate() {
-    return;
+    const p1 = this.currentPlayer;
+    const p2 = this.players.find((player) => player !== p1);
+
+    const p1Score = p1.score;
+    const p2Score = p2.score;
+
+    return p1Score - p2Score;
+  }
+
+  isGameOver() {
+    return this.gameOver;
   }
 }

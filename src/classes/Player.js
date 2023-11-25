@@ -21,6 +21,7 @@ export default class Player {
    */
   direction = 0;
   score = 0;
+
   constructor(name, id, color) {
     this.name = name;
     this.id = id;
@@ -62,11 +63,15 @@ export default class Player {
   /**
    *
    * @param capturedPiece {Piece}
+   * @param board {GameBoard}
    */
-  freePiece(capturedPiece) {
+  freePiece(capturedPiece, board) {
     this.ownedPieces = this.ownedPieces.filter(
       (piece) => piece !== capturedPiece,
     );
+
+    board.pieces = board.pieces.filter((piece) => piece !== capturedPiece);
+    board.removeChild(capturedPiece);
   }
 
   /**
@@ -74,12 +79,6 @@ export default class Player {
    * @param move {Move}
    */
   onCapture(move) {
-    let capturedPiece = move.capturedPiece;
-    let otherPlayer = capturedPiece.player;
-
-    // subtract the captured piece's value from the other player's score
-    otherPlayer.addScore(-capturedPiece.pieceValue);
-
     this.addScore(move.piece.pieceValue);
     this.captureMoves.push(move);
     this.capturedPieces.push(move.capturedPiece);
