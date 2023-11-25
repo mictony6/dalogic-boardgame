@@ -7,7 +7,7 @@ export class StateManager {
    * @param initialState {string}
    */
   constructor(manager, initialState) {
-    this.currentState = initialState;
+    this._currentState = initialState;
     this.manager = manager;
 
     this.transitions = {
@@ -15,7 +15,7 @@ export class StateManager {
         update: manager.updatePlaying.bind(manager),
       },
       moving: {
-        update: manager.animateMove.bind(manager),
+        update: manager.updateMoving.bind(manager),
       },
       capturing: {
         update: manager.updateCapturing.bind(manager),
@@ -36,6 +36,14 @@ export class StateManager {
 
   get isPaused() {
     return this.currentState === 'paused';
+  }
+
+  set currentState(val){
+    this._currentState = val;
+  }
+
+  get currentState(){
+    return this._currentState;
   }
 
   // Add more state management methods as needed

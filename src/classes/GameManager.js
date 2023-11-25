@@ -72,31 +72,18 @@ export class GameManager {
     this.inputManager = new InputManager(this, this.stateManager);
     this.eventManager = new GameEventManager();
 
+
   }
 
-  reset() {
-    this.app.ticker.remove(this.update.bind(this));
-    this.isPaused = false;
-    this.pieces.forEach(piece => piece.destroy());
-    this.pieces.length = 0;
-    this.selectedPiece = null;
-    this.selectedTile = null;
-    this.currentPlayer = null;
-    this.app.stage.removeChildren(0)
 
-    this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
-    this.moveValidator = new MoveValidator(this.board);
-    this.stateManager = new StateManager(this, "playing");
-    this.inputManager = new InputManager(this, this.stateManager);
-  }
-
-  start() {
-    this.currentPlayer = this.players[1];
-    this.switchPlayerTurn();
+  gameStart() {
+    this.currentPlayer = this.players[0]
+    this.board.enableTiles()
     this.eventManager.trigger(new ReadyEvent(this))
     this.app.ticker.add(this.update.bind(this));
-  }
+    this.app.ticker.start()
 
+  }
 
 
   loadPlayers() {
@@ -208,7 +195,7 @@ export class GameManager {
 
     // finally setting piece as selectedPiece
     this.selectedPiece = piece;
-    this.showValidMoves();
+    this.showValidMoves(this.currentPlayer);
   }
 
 
@@ -226,7 +213,6 @@ export class GameManager {
    */
   selectTile(tile) {
     if (!this.selectedPiece) {
-
       throw Error("No piece selected")
     }
 
@@ -234,14 +220,20 @@ export class GameManager {
     for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
       let move = this.currentPlayer.validMoves[i];
       if (move.destTile === tile) {
+        this.selectedTile = tile
         if (move.isCaptureMove) {
-          this.performCapture(move);
+          move.capturedPiece = move.destTile.piece
+
+          // Get the destination tile for the capturing piece
+          move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+
+          this.currentMove = move;
           this.resetTileTints();
           isInValidMoves = true;
           break;
         }
-
-        this.executeMove(move);
+        this.currentMove = move
+        // this.executeMove(move);
         isInValidMoves = true;
         break;
       }
@@ -249,7 +241,14 @@ export class GameManager {
 
 
     if (!isInValidMoves) {
+      this.deselectTile()
       this.deselectPiece();
+    }
+  }
+
+  deselectTile() {
+    if (this.selectedTile) {
+      this.selectedTile = null;
     }
   }
 
@@ -288,15 +287,16 @@ export class GameManager {
 
   /**
    * Highlights all valid moves for a piece.
+   * @param player {Player}
    */
-  showValidMoves() {
+  showValidMoves(player) {
     let piece = this.selectedPiece;
 
     // Reset the tint for all tiles
     this.resetTileTints();
 
-    this.currentPlayer.validMoves = this.getValidMoves(piece);
-    this.currentPlayer.validMoves.forEach(move => {
+    player.validMoves = this.getValidMoves(piece);
+    player.validMoves.forEach(move => {
       // check if capture move
       if (this.moveValidator.validateCaptureMove(move)) {
         move.isCaptureMove = true;
@@ -340,7 +340,7 @@ export class GameManager {
 
   }
 
-  animateMove() {
+  updateMoving() {
     if (this.isPaused) return;
     let move = this.currentMove;
     const tile = move.destTile;
@@ -378,7 +378,7 @@ export class GameManager {
    */
   _movePieceTowards(piece, destination) {
     const SPEED = 5;
-    let deltaTime = Ticker.shared.deltaTime;
+    let deltaTime = this.app.ticker.deltaTime;
     piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime);
     piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime);
   }
@@ -395,7 +395,6 @@ export class GameManager {
 
     if (this.currentPlayer instanceof RandomAI) {
       this.board.disableTiles();
-      this.currentPlayer.perform(this).then(() => { })
     } else {
       // set the current players pieces eventMode to static
       this.board.enableTiles();
@@ -416,6 +415,7 @@ export class GameManager {
      * render piece value on top of the pieces
      * @type {Piece[]}
      */
+
     let pieces = [...this.players[0].ownedPieces, ...this.players[1].ownedPieces];
     pieces.forEach(piece => {
       piece.renderPieceValue();
@@ -437,12 +437,24 @@ export class GameManager {
    * @param delta 
    */
   updatePlaying(delta) {
-
-
     if (this.isPaused) {
       console.log("Game Paused")
       this.stateManager.currentState = 'paused';
     }
+
+    if (this.selectedPiece && this.selectedTile && this.currentMove) {
+      if (this.currentMove.capturedPiece) {
+        this.stateManager.currentState = 'capturing';
+        return;
+      }
+      this.stateManager.currentState = 'moving';
+      return
+    }
+    if (this.currentPlayer instanceof RandomAI) {
+      this.currentPlayer.perform(this).then(() => { })
+
+    }
+
   }
 
   /**

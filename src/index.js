@@ -18,7 +18,7 @@ const app = new PIXI.Application({
   width: 64 * 5,
   height: 64 * 5,
   antialias: true,
-  sharedTicker: true
+  autoStart: false
 });
 
 globalThis.__PIXI_APP__ = app;
@@ -31,7 +31,6 @@ if (canvasStyle instanceof CSSStyleDeclaration) {
 } else {
   console.error('canvas style is not an instance of CSSStyleDeclaration');
 }
-
 
 
 const gameManager = new GameManager(app);
@@ -47,16 +46,6 @@ if (pauseButton) {
   console.error('Pause button not found!');
 }
 
-if (resetButton) {
-  resetButton.onclick = () => {
-    gameManager.stateManager.setPaused(true);
-    gameManager.reset();
-    gameManager.loadPlayers();
-
-    gameManager.loadGame();
-    gameManager.start()
-  }
-}
 
 if (passButton) {
   passButton.onclick = () => {
@@ -70,7 +59,7 @@ if (startButton) {
 
     gameManager.loadGame();
 
-    gameManager.start()
+    gameManager.gameStart()
 
 
 
