@@ -1,17 +1,14 @@
-import { GameBoard } from "./GameBoard";
-import { Player } from "./Player";
-import { MoveValidator } from "./MoveValidator";
-import { RandomAI } from "./RandomAI";
-import { StateManager } from "./StateManager";
-import { InputManager } from "./InputManager";
-import { Piece } from "./Piece";
-import { Operations } from "./Operations";
-import { Application, Renderer, Ticker } from "pixi.js";
-import { GameRenderer } from "./GameRenderer";
-import { GameEventManager } from "./GameEventManager";
-import { ReadyEvent, ScoreEvent } from "./GameEvent";
-import { Move } from "./Move";
-
+import {GameBoard} from './GameBoard';
+import {Player} from './Player';
+import {MoveValidator} from './MoveValidator';
+import {RandomAI} from './RandomAI';
+import {StateManager} from './StateManager';
+import {InputManager} from './InputManager';
+import {Piece} from './Piece';
+import {Operations} from './Operations';
+import {GameRenderer} from './GameRenderer';
+import {GameEventManager} from './GameEventManager';
+import {ReadyEvent, ScoreEvent} from './GameEvent';
 
 class GameModeFactory {
   PlayerVsPlayer = 0;
@@ -32,11 +29,11 @@ export class GameManager {
   /**
    * @type {Piece[]}
    */
-  pieces = []
+  pieces = [];
   /**
    * @type {Player[]}
    */
-  players = []
+  players = [];
   /**
    *
    * @type {Piece}
@@ -58,33 +55,33 @@ export class GameManager {
   currentMove = null;
 
   /**
-   * 
-   * @param {Application} app 
+   *
+   * @param {Application} app
    */
   constructor(app) {
     this.app = app;
     this.boardDimension = [app.screen.width / 64, app.screen.height / 64];
-    this.renderer = new GameRenderer(app);;
-    this.board = new GameBoard(this.boardDimension[0], this.boardDimension[1], 64, this.app)
+    this.renderer = new GameRenderer(app);
+    this.board = new GameBoard(
+        this.boardDimension[0],
+        this.boardDimension[1],
+        64,
+        this.app,
+    );
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.AIVsAI;
-    this.stateManager = new StateManager(this, "playing");
+    this.gameMode = GameMode.PlayerVsPlayer;
+    this.stateManager = new StateManager(this, 'playing');
     this.inputManager = new InputManager(this, this.stateManager);
     this.eventManager = new GameEventManager();
-
-
   }
-
 
   gameStart() {
-    this.currentPlayer = this.players[0]
-    this.board.enableTiles()
-    this.eventManager.trigger(new ReadyEvent(this))
+    this.currentPlayer = this.players[1];
+    this.switchPlayerTurn();
+    this.eventManager.trigger(new ReadyEvent(this));
     this.app.ticker.add(this.update.bind(this));
-    this.app.ticker.start()
-
+    this.app.ticker.start();
   }
-
 
   loadPlayers() {
     this.players.length = 0;
@@ -97,35 +94,30 @@ export class GameManager {
      */
     let player2 = null;
     if (this.gameMode === GameMode.PlayerVsPlayer) {
-      player1 = new Player("Player 1", 1, 0xaf2010);
-      player2 = new Player("Player 2", 2, 0x00b0af);
-
+      player1 = new Player('Player 1', 1, 0xaf2010);
+      player2 = new Player('Player 2', 2, 0x00b0af);
     } else if (this.gameMode === GameMode.PlayerVsAI) {
-      player1 = new Player("Player 1", 1, 0xaf2010);
-      player2 = new RandomAI("Player 2", 2, 0x00b0af);
+      player1 = new Player('Player 1', 1, 0xaf2010);
+      player2 = new RandomAI('Player 2', 2, 0x00b0af);
     } else if (this.gameMode === GameMode.AIVsAI) {
-      player1 = new RandomAI("Player 1", 1, 0xaf2010);
-      player2 = new RandomAI("Player 2", 2, 0x00b0af);
-
+      player1 = new RandomAI('Player 1', 1, 0xaf2010);
+      player2 = new RandomAI('Player 2', 2, 0x00b0af);
     }
     if (player1 && player2) {
-
-      player1.setDirectionUp()
-      player2.setDirectionDown()
+      player1.setDirectionUp();
+      player2.setDirectionDown();
       this.players.push(player1);
       this.players.push(player2);
-
     } else {
-      throw new Error("Invalid game mode")
+      throw new Error('Invalid game mode');
     }
   }
-
 
   loadGame() {
     this.renderer.addElement(this.board);
 
-    let player1 = this.players[0];
-    let player2 = this.players[1];
+    const player1 = this.players[0];
+    const player2 = this.players[1];
 
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 1);
     this.loadPiecesForPlayer(player1, this.boardDimension[0] - 2);
@@ -134,49 +126,56 @@ export class GameManager {
     player1.initPieces();
     player2.initPieces();
     this.inputManager.initialize();
-
-
   }
 
   /**
- * 
- * @param {Player} player 
- * @param {Number} startingRow 
- */
+   *
+   * @param {Player} player
+   * @param {Number} startingRow
+   */
   loadPiecesForPlayer(player, startingRow) {
-    let targetSum = 5;
-
     for (let col = 0; col < this.board.columns; col++) {
       const tile = this.board.getTile(startingRow, col);
       if (tile.isBlack) continue;
-      let piece = new Piece(startingRow, col, 64, this.app);
+      const piece = new Piece(startingRow, col, 64, this.app);
       piece.assignPlayer(player);
       piece.occupyTile(tile);
-
 
       this.pieces.push(piece);
       this.renderer.addElement(piece);
 
       player.ownedPieces.push(piece);
-
     }
-
   }
 
-
+  /**
+   *
+   * @param a {Number}
+   * @param b {Number}
+   * @param operation {String}
+   * @return {Number}
+   */
   performTileOperation(a, b, operation) {
     let res;
     if (operation === 'AND') {
-      res = Operations.and(a, b)
+      res = Operations.and(a, b);
     } else if (operation === 'OR') {
-      res = Operations.or(a, b)
+      res = Operations.or(a, b);
     } else if (operation === 'XOR') {
-      res = Operations.xor(a, b)
+      res = Operations.xor(a, b);
     } else if (operation === 'NAND') {
-      res = Operations.nand(a, b)
+      res = Operations.nand(a, b);
     }
 
-    console.log(a.toString() + " " + operation + " " + b.toString() + " = " + res.toString())
+    console.log(
+        a.toString() +
+        ' ' +
+        operation +
+        ' ' +
+        b.toString() +
+        ' = ' +
+        res.toString(),
+    );
 
     return res;
   }
@@ -198,7 +197,6 @@ export class GameManager {
     this.showValidMoves(this.currentPlayer);
   }
 
-
   deselectPiece() {
     if (this.selectedPiece) {
       this.selectedPiece = null;
@@ -213,35 +211,36 @@ export class GameManager {
    */
   selectTile(tile) {
     if (!this.selectedPiece) {
-      throw Error("No piece selected")
+      return;
     }
-
     let isInValidMoves = false;
     for (let i = 0; i < this.currentPlayer.validMoves.length; i++) {
-      let move = this.currentPlayer.validMoves[i];
+      const move = this.currentPlayer.validMoves[i];
       if (move.destTile === tile) {
-        this.selectedTile = tile
+        this.selectedTile = tile;
         if (move.isCaptureMove) {
-          move.capturedPiece = move.destTile.piece
+          move.capturedPiece = move.destTile.piece;
 
           // Get the destination tile for the capturing piece
-          move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+          move.destTile = this.board.getTile(
+              move.destTile.row + move.piece.player.direction,
+              move.destTile.col + move.moveColDiff,
+          );
 
           this.currentMove = move;
           this.resetTileTints();
           isInValidMoves = true;
           break;
         }
-        this.currentMove = move
+        this.currentMove = move;
         // this.executeMove(move);
         isInValidMoves = true;
         break;
       }
     }
 
-
     if (!isInValidMoves) {
-      this.deselectTile()
+      this.deselectTile();
       this.deselectPiece();
     }
   }
@@ -256,32 +255,37 @@ export class GameManager {
    * Restores tile color to their default color (black or white).
    */
   resetTileTints() {
-    this.board.tiles.flat().forEach(tile => {
+    this.board.tiles.flat().forEach((tile) => {
       tile.tint = tile.isBlack ? 0x111111 : 0xeeeeee;
     });
   }
 
-
   /**
    * Returns all valid move of certain piece.
-   * @param {Piece} piece 
-   * @returns {Move[]}
+   * @param {Piece} piece
+   * @return {Move[]}
    */
   getValidMoves(piece) {
     const moves = this.getAllMoves(piece);
-    return moves.filter(move => this.moveValidator.validateMove(move))
+    return moves.filter((move) => this.moveValidator.validateMove(move));
   }
 
   /**
    * Returns all possible diagonal moves for a piece. Does not check if the move is valid.
    * @param piece {Piece}
-   * @returns {Move[]}
+   * @return {Move[]}
    */
   getAllMoves(piece) {
     // players can only move forward
     return [
-      this.board.createMove(piece, [piece.row + piece.player.direction, piece.col + 1]),
-      this.board.createMove(piece, [piece.row + piece.player.direction, piece.col - 1])
+      this.board.createMove(piece, [
+        piece.row + piece.player.direction,
+        piece.col + 1,
+      ]),
+      this.board.createMove(piece, [
+        piece.row + piece.player.direction,
+        piece.col - 1,
+      ]),
     ];
   }
 
@@ -290,62 +294,47 @@ export class GameManager {
    * @param player {Player}
    */
   showValidMoves(player) {
-    let piece = this.selectedPiece;
+    const piece = this.selectedPiece;
 
     // Reset the tint for all tiles
     this.resetTileTints();
 
     player.validMoves = this.getValidMoves(piece);
-    player.validMoves.forEach(move => {
+    player.validMoves.forEach((move) => {
       // check if capture move
       if (this.moveValidator.validateCaptureMove(move)) {
         move.isCaptureMove = true;
       }
 
-      let tile = move.destTile;
+      const tile = move.destTile;
       tile.tint = 0x005f90; // Apply tint to valid tiles
     });
   }
 
-
-
-  /**
-   * Executes a move and animates the piece. Note: This does not check if the move is valid.
-   * @param move {Move}
-   */
-  executeMove(move) {
-    this.currentMove = move;
-    this.stateManager.currentState = "moving"
-  }
-
-
   moveToward(from, to, delta) {
+    const diff = to - from;
 
-    let diff = to - from;
-
-    let direction = (diff > 0) ? 1 : ((diff < 0) ? -1 : 0);
+    const direction = diff > 0 ? 1 : diff < 0 ? -1 : 0;
 
     // Calculate the absolute difference
-    let abs_diff = Math.abs(diff);
-
+    const absDiff = Math.abs(diff);
 
     // Check if the absolute difference is less than or equal to the specified delta
-    if (abs_diff <= delta || abs_diff < Number.EPSILON) {
+    if (absDiff <= delta || absDiff < Number.EPSILON) {
       // If so, return the target value
       return to;
     } else {
       // Otherwise, calculate the new position by moving towards the target
       return from + direction * delta;
     }
-
   }
 
   updateMoving() {
     if (this.isPaused) return;
-    let move = this.currentMove;
+    const move = this.currentMove;
     const tile = move.destTile;
     const piece = this.selectedPiece;
-    //tint the tile green
+    // tint the tile green
     tile.tint = 0x00ff00;
 
     const destination = {
@@ -356,29 +345,24 @@ export class GameManager {
     this._movePieceTowards(piece, destination);
 
     if (piece.x === destination.x && piece.y === destination.y) {
-
       piece.row = tile.row;
       piece.col = tile.col;
       piece.leaveCurrentTile();
       piece.occupyTile(tile);
       this.deselectPiece();
       this.currentMove = null;
-      this.stateManager.currentState = "switchingTurn"
+      this.stateManager.currentState = 'switchingTurn';
     }
-
-
-
-
   }
 
   /**
    * Private function to move the piece a bit towards the destination in a certain speed
-   * @param {Piece} piece 
-   * @param {Object} destination 
+   * @param {Piece} piece
+   * @param {Object} destination
    */
   _movePieceTowards(piece, destination) {
     const SPEED = 5;
-    let deltaTime = this.app.ticker.deltaTime;
+    const deltaTime = this.app.ticker.deltaTime;
     piece.x = this.moveToward(piece.x, destination.x, SPEED * deltaTime);
     piece.y = this.moveToward(piece.y, destination.y, SPEED * deltaTime);
   }
@@ -388,27 +372,26 @@ export class GameManager {
    */
   switchPlayerTurn() {
     // set the previous players pieces eventMode to none
-    this.currentPlayer.disable()
+    this.currentPlayer.disable();
 
     // set current player to the other player
-    this.currentPlayer = this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
+    this.currentPlayer =
+      this.currentPlayer.id === 1 ? this.players[1] : this.players[0];
 
     if (this.currentPlayer instanceof RandomAI) {
       this.board.disableTiles();
     } else {
       // set the current players pieces eventMode to static
       this.board.enableTiles();
-      this.currentPlayer.enable()
-
+      this.currentPlayer.enable();
     }
 
-    this.stateManager.currentState = "playing";
+    this.stateManager.currentState = 'playing';
   }
-
 
   /**
    * Method that is being called every frame.
-   * @param delta 
+   * @param delta
    */
   update(delta) {
     /**
@@ -416,29 +399,37 @@ export class GameManager {
      * @type {Piece[]}
      */
 
-    let pieces = [...this.players[0].ownedPieces, ...this.players[1].ownedPieces];
-    pieces.forEach(piece => {
+    const pieces = [
+      ...this.players[0].ownedPieces,
+      ...this.players[1].ownedPieces,
+    ];
+    pieces.forEach((piece) => {
       piece.renderPieceValue();
     });
 
-    let tiles = this.board.tiles.flat();
+    const tiles = this.board.tiles.flat();
 
-    tiles.forEach(tile => {
+    tiles.forEach((tile) => {
       tile.renderOperation();
-    })
+    });
 
-    if (this.stateManager.transitions[this.stateManager.currentState] && this.stateManager.transitions[this.stateManager.currentState].update) {
-      this.stateManager.transitions[this.stateManager.currentState].update(delta);
+    if (
+      this.stateManager.transitions[this.stateManager.currentState] &&
+      this.stateManager.transitions[this.stateManager.currentState].update
+    ) {
+      this.stateManager.transitions[this.stateManager.currentState].update(
+          delta,
+      );
     }
   }
 
   /**
    * Logic for the "playing" state for every frame
-   * @param delta 
+   * @param delta
    */
   updatePlaying(delta) {
     if (this.isPaused) {
-      console.log("Game Paused")
+      console.log('Game Paused');
       this.stateManager.currentState = 'paused';
     }
 
@@ -448,45 +439,45 @@ export class GameManager {
         return;
       }
       this.stateManager.currentState = 'moving';
-      return
+      return;
     }
     if (this.currentPlayer instanceof RandomAI) {
-      this.currentPlayer.perform(this).then(() => { })
-
+      this.currentPlayer.perform(this).then(() => {});
     }
-
   }
 
   /**
- * Logic for the "paused" state for every frame
- * @param delta 
- */
+   * Logic for the "paused" state for every frame
+   * @param delta
+   */
   updatePaused(delta) {
-
     if (!this.isPaused) {
-      console.log("Game Resumed")
+      console.log('Game Resumed');
       if (this.currentMove) {
         this.stateManager.currentState = 'moving';
-        return
+        return;
       }
       this.stateManager.currentState = 'playing';
     }
   }
 
   /**
- *
- * @param move {Move}
- */
+   *
+   * @param move {Move}
+   */
   performCapture(move) {
-    //tint the tile green
+    // tint the tile green
     move.destTile.tint = 0x00ff00;
 
-    move.capturedPiece = move.destTile.piece
+    move.capturedPiece = move.destTile.piece;
     // Get the destination tile for the capturing piece
-    move.destTile = this.board.getTile(move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff);
+    move.destTile = this.board.getTile(
+        move.destTile.row + move.piece.player.direction,
+        move.destTile.col + move.moveColDiff,
+    );
 
     this.currentMove = move;
-    this.stateManager.currentState = "capturing"
+    this.stateManager.currentState = 'capturing';
   }
 
   updateCapturing() {
@@ -494,7 +485,7 @@ export class GameManager {
 
     const move = this.currentMove;
     const piece = move.piece;
-    const targetPiece = move.capturedPiece
+    const targetPiece = move.capturedPiece;
     const tile = move.destTile;
 
     // remove the targetPiece from the renderer
@@ -509,7 +500,6 @@ export class GameManager {
     this._movePieceTowards(piece, destination);
 
     if (piece.x === destination.x && piece.y === destination.y) {
-
       piece.row = tile.row;
       piece.col = tile.col;
       piece.leaveCurrentTile();
@@ -525,27 +515,24 @@ export class GameManager {
       targetPiece.leaveCurrentTile();
       // Update capturing piece and its corresponding tile locations
       piece.pieceValue = this.performTileOperation(
-        piece.pieceValue,
-        targetPiece.pieceValue,
-        move.destTile.operation
+          piece.pieceValue,
+          targetPiece.pieceValue,
+          move.destTile.operation,
       );
       piece.leaveCurrentTile();
       piece.occupyTile(move.destTile);
 
-
       // Run player logic for capturing a piece
       this.currentPlayer.onCapture(move);
+      this.eventManager.trigger(new ScoreEvent(move.capturedPiece.player));
 
       // Trigger a score event for the capturing player
       this.eventManager.trigger(new ScoreEvent(piece.player));
 
       // Remove the target piece from the renderer and the pieces array
-      this.pieces = this.pieces.filter(piece => piece !== targetPiece);
+      this.pieces = this.pieces.filter((piece) => piece !== targetPiece);
 
-      this.stateManager.currentState = "switchingTurn";
+      this.stateManager.currentState = 'switchingTurn';
     }
   }
-
 }
-
-

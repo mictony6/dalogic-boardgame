@@ -1,10 +1,8 @@
-import { GameManager } from "./GameManager";
-
 export class StateManager {
   /**
    *
    * @param manager {GameManager}
-   * @param initialState {string}
+   * @param initialState {String}
    */
   constructor(manager, initialState) {
     this._currentState = initialState;
@@ -25,24 +23,24 @@ export class StateManager {
       },
       switchingTurn: {
         update: manager.switchPlayerTurn.bind(manager),
-      }
+      },
       // Add more states as needed...
-    }
+    };
   }
 
   setPaused(paused) {
-    this.currentState = paused ? 'paused' : 'playing';
+    this.currentState = paused ? "paused" : "playing";
   }
 
   get isPaused() {
-    return this.currentState === 'paused';
+    return this.currentState === "paused";
   }
 
-  set currentState(val){
+  set currentState(val) {
     this._currentState = val;
   }
 
-  get currentState(){
+  get currentState() {
     return this._currentState;
   }
 

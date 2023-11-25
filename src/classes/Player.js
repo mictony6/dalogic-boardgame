@@ -1,4 +1,3 @@
-
 export class Player {
   /**
    *
@@ -45,19 +44,19 @@ export class Player {
   }
 
   numberOfActivePieces() {
-    return this.ownedPieces.length
+    return this.ownedPieces.length;
   }
 
   enable() {
-    this.ownedPieces.forEach(piece => {
+    this.ownedPieces.forEach((piece) => {
       piece.eventMode = "static";
-    })
+    });
   }
 
   disable() {
-    this.ownedPieces.forEach(piece => {
+    this.ownedPieces.forEach((piece) => {
       piece.eventMode = "none";
-    })
+    });
   }
 
   /**
@@ -65,22 +64,25 @@ export class Player {
    * @param capturedPiece {Piece}
    */
   freePiece(capturedPiece) {
-    this.ownedPieces = this.ownedPieces.filter(piece => piece !== capturedPiece);
+    this.ownedPieces = this.ownedPieces.filter(
+      (piece) => piece !== capturedPiece,
+    );
   }
-
 
   /**
    *
    * @param move {Move}
    */
   onCapture(move) {
-    const player = move.piece.player;
+    let capturedPiece = move.capturedPiece;
+    let otherPlayer = capturedPiece.player;
+
+    // subtract the captured piece's value from the other player's score
+    otherPlayer.addScore(-capturedPiece.pieceValue);
 
     this.addScore(move.piece.pieceValue);
     this.captureMoves.push(move);
     this.capturedPieces.push(move.capturedPiece);
-
-
   }
 
   addScore(score) {
@@ -88,10 +90,10 @@ export class Player {
   }
 
   initPieces() {
-    const targetSum = Math.floor((this.ownedPieces.length * 3) / 2)
+    const targetSum = Math.floor((this.ownedPieces.length * 3) / 2);
 
     // Add the current pieces' values to the score
-    this.ownedPieces.forEach(piece => {
+    this.ownedPieces.forEach((piece) => {
       this.addScore(piece.pieceValue);
     });
 
@@ -123,12 +125,11 @@ export class Player {
   reset() {
     this.validMoves.length = 0;
     this.movesHistory.length = 0;
-    this.ownedPieces.forEach(piece => piece.destroy())
+    this.ownedPieces.forEach((piece) => piece.destroy());
     this.ownedPieces.length = 0;
     this.captureMoves.length = 0;
     this.capturedPieces.length = 0;
     this.direction = 0;
     this.score = 0;
   }
-
 }

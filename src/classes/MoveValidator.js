@@ -1,5 +1,3 @@
-import { Move } from "./Move";
-
 export class MoveValidator {
   /**
    *
@@ -25,9 +23,6 @@ export class MoveValidator {
     if (this.validateCaptureMove(move)) {
       return true;
     }
-
-
-
   }
 
   /**
@@ -39,15 +34,14 @@ export class MoveValidator {
     /**
      * @type {Move}
      */
-    let moveAcross = this.board.createMove(move.piece, [move.destTile.row + move.piece.player.direction, move.destTile.col + move.moveColDiff]);
+    let moveAcross = this.board.createMove(move.piece, [
+      move.destTile.row + move.piece.player.direction,
+      move.destTile.col + move.moveColDiff,
+    ]);
     if (!moveAcross.inBounds || moveAcross.destTile.occupied) {
       return false;
-
     } else {
-
       return move.capturePossible();
-
     }
   }
-
 }

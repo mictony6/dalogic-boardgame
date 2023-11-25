@@ -1,56 +1,51 @@
-import * as PIXI from 'pixi.js';
-import './style.css';
+import * as PIXI from "pixi.js";
+import "./style.css";
 import { GameManager } from "./classes/GameManager";
 import { GameRenderer } from "./classes/GameRenderer";
-import { ReadyEvent, ScoreEvent } from './classes/GameEvent';
+import { ReadyEvent, ScoreEvent } from "./classes/GameEvent";
 
-
-
-const startButton = document.getElementById('startButton');
-const pauseButton = document.getElementById('pauseButton');
-const resetButton = document.getElementById('resetButton');
-const passButton = document.getElementById('passButton');
+const startButton = document.getElementById("startButton");
+const pauseButton = document.getElementById("pauseButton");
+const resetButton = document.getElementById("resetButton");
+const passButton = document.getElementById("passButton");
 const centerDiv = document.getElementById("center");
 const scoreBoard = document.getElementById("scores");
 
 const app = new PIXI.Application({
-  background: '#74bbde',
+  background: "#74bbde",
   width: 64 * 5,
   height: 64 * 5,
   antialias: true,
-  autoStart: false
+  autoStart: false,
 });
 
 globalThis.__PIXI_APP__ = app;
 
 const canvasStyle = app.renderer.view.style;
 if (canvasStyle instanceof CSSStyleDeclaration) {
-  canvasStyle.position = 'absolute';
+  canvasStyle.position = "absolute";
   // @ts-ignore
   centerDiv.appendChild(app.view);
 } else {
-  console.error('canvas style is not an instance of CSSStyleDeclaration');
+  console.error("canvas style is not an instance of CSSStyleDeclaration");
 }
-
 
 const gameManager = new GameManager(app);
 const gameEventManager = gameManager.eventManager;
 
-
 if (pauseButton) {
   pauseButton.onclick = () => {
-    gameManager.isPaused = !gameManager.isPaused
-    pauseButton.innerText = gameManager.isPaused ? "resume" : "pause"
-  }
+    gameManager.isPaused = !gameManager.isPaused;
+    pauseButton.innerText = gameManager.isPaused ? "resume" : "pause";
+  };
 } else {
-  console.error('Pause button not found!');
+  console.error("Pause button not found!");
 }
-
 
 if (passButton) {
   passButton.onclick = () => {
-    gameManager.switchPlayerTurn()
-  }
+    gameManager.eventManager.currentState = "switchingTurn";
+  };
 }
 
 if (startButton) {
@@ -59,18 +54,11 @@ if (startButton) {
 
     gameManager.loadGame();
 
-    gameManager.gameStart()
-
-
-
-
-  }
-
-
+    gameManager.gameStart();
+  };
 }
 
-
-const playerElements = []
+const playerElements = [];
 
 /**
  * Handle the 'score' event.
@@ -97,12 +85,12 @@ function onGameReady(e) {
   const players = gameManager.players;
 
   // Clear existing player elements
-  playerElements.forEach(element => {
+  playerElements.forEach((element) => {
     scoreBoard.removeChild(element);
   });
   playerElements.length = 0; // Clear the array
 
-  players.forEach(player => {
+  players.forEach((player) => {
     let element = document.createElement("div");
     element.id = `player${player.id}`;
     element.innerHTML = `${player.name}: ${player.score}`;
@@ -112,10 +100,5 @@ function onGameReady(e) {
   scoreBoard.append(...playerElements);
 }
 
-
-gameEventManager.on("score", onScore)
-gameEventManager.on("ready", onGameReady)
-
-
-
-
+gameEventManager.on("score", onScore);
+gameEventManager.on("ready", onGameReady);

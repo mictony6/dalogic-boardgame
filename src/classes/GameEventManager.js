@@ -1,10 +1,6 @@
-import { GameEvent } from "./GameEvent";
-
 export class GameEventManager {
-  listeners = {
-  }
-  constructor() {
-  }
+  listeners = {};
+  constructor() {}
 
   /**
    * Add an event listener for a specific event type.
@@ -12,7 +8,6 @@ export class GameEventManager {
    * @param {Function} callback - The callback function to be invoked when the event occurs.
    */
   on(eventName, callback) {
-
     // Check if the event type already has listeners
     if (!this.listeners[eventName]) {
       this.listeners[eventName] = [];
@@ -23,17 +18,16 @@ export class GameEventManager {
   }
 
   /**
- * Remove an event listener for a specific event type.
- * @param {String} eventName - The event to listen for.
- * @param {Function} callback - The callback function to be invoked when the event occurs.
- */
+   * Remove an event listener for a specific event type.
+   * @param {String} eventName - The event to listen for.
+   * @param {Function} callback - The callback function to be invoked when the event occurs.
+   */
   off(eventName, callback) {
     /**
      * @type {Function[]}
      * */
     const listeners = this.listeners[eventName];
     if (listeners) {
-
       this.listeners[eventName] = listeners.filter((cb) => cb !== callback);
       if (this.listeners[eventName].length === 0) {
         delete this.listeners[eventName];
@@ -43,7 +37,7 @@ export class GameEventManager {
 
   /**
    * Executes all the callbacks listening to the event.
-   * @param {GameEvent} event 
+   * @param {GameEvent} event
    */
   trigger(event) {
     /**
@@ -52,8 +46,7 @@ export class GameEventManager {
     const listeners = this.listeners[event.name];
 
     if (listeners) {
-      listeners.forEach(callback => callback(event));
+      listeners.forEach((callback) => callback(event));
     }
   }
-
 }

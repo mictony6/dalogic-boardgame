@@ -1,5 +1,3 @@
-
-
 export class Move {
   constructor(piece, dest) {
     this.piece = piece;
@@ -12,12 +10,17 @@ export class Move {
     this.destTile = null;
     this.inBounds = true;
     this.isCaptureMove = false;
+    /**
+     * The piece that was captured by this move.
+     * @type {Piece}
+     */
     this.capturedPiece = null;
-
   }
 
   capturePossible() {
-    return this.destTile.occupied && this.destTile.piece.player !== this.piece.player;
+    return (
+      this.destTile.occupied && this.destTile.piece.player !== this.piece.player
+    );
   }
 
   canMoveIntoTile() {
@@ -31,6 +34,4 @@ export class Move {
   get moveRowDiff() {
     return this.destRow - this.piece.row;
   }
-
-
 }

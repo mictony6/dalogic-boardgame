@@ -9,7 +9,6 @@ export class InputManager {
   constructor(gameManager, stateManager) {
     this.gameManager = gameManager;
     this.stateManager = stateManager;
-
   }
 
   initialize() {
@@ -18,8 +17,8 @@ export class InputManager {
   }
 
   initializeTiles() {
-    this.gameManager.board.tiles.flat().forEach(tile => {
-      tile.on('pointerdown', () => {
+    this.gameManager.board.tiles.flat().forEach((tile) => {
+      tile.on("pointerdown", () => {
         if (!this.stateManager.isPaused) {
           this.handleTileClick(tile);
         }
@@ -28,38 +27,40 @@ export class InputManager {
   }
 
   initializePieces() {
-    let p1 = this.gameManager.players[0]
+    const p1 = this.gameManager.players[0];
 
     if (!(p1 instanceof RandomAI)) {
-      p1.ownedPieces.forEach(piece => {
+      p1.ownedPieces.forEach((piece) => {
         piece.on("pointerdown", () => {
           if (!this.stateManager.isPaused) {
             this.handlePieceClick(piece);
           }
-        })
-        piece.eventMode = "static"
-      })
+        });
+        piece.eventMode = "static";
+      });
     }
 
-    let p2 = this.gameManager.players[1];
+    const p2 = this.gameManager.players[1];
 
     if (!(p2 instanceof RandomAI)) {
-      p2.owwnedPieces.forEach(piece => {
+      p2.ownedPieces.forEach((piece) => {
         piece.on("pointerdown", () => {
           if (!this.stateManager.isPaused) {
             this.handlePieceClick(piece);
           }
-        })
-        piece.eventMode = "static"
-      })
+        });
+        piece.eventMode = "static";
+      });
     }
   }
 
-
   handlePieceClick(piece) {
+    /**
+     * @type {String}
+     */
     const currentState = this.stateManager.currentState;
 
-    if (currentState === 'playing') {
+    if (currentState === "playing") {
       this.gameManager.selectPiece(piece);
     }
   }
@@ -67,9 +68,8 @@ export class InputManager {
   handleTileClick(tile) {
     const currentState = this.stateManager.currentState;
 
-    if (currentState === 'playing') {
+    if (currentState === "playing") {
       this.gameManager.selectTile(tile);
     }
-
   }
 }
