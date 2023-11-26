@@ -103,8 +103,8 @@ export class GameManager {
       player1 = new Player("Player 1", 1, 0xaf2010);
       player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 6);
     } else if (this.gameMode === GameMode.AIVsAI) {
-      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 6);
-      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 3);
+      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 8);
+      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 8);
     }
     if (player1 && player2) {
       player1.setDirectionUp();

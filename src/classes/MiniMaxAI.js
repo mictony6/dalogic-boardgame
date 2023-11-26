@@ -24,12 +24,21 @@ export default class MiniMaxAI extends Player {
   /**
    *
    * @param position {Move}
-   * @param depth
-   * @param maximizingPlayer
+   * @param depth {Number}
+   * @param maximizingPlayer {Boolean}
    * @param manager {GameManager}
+   * @param alpha {Number}
+   * @param beta {Number}
    * @return {[Number, Move]}
    */
-  minimax(position, depth, maximizingPlayer, manager) {
+  minimax(
+    position,
+    depth,
+    maximizingPlayer,
+    manager,
+    alpha = -Infinity,
+    beta = Infinity,
+  ) {
     if (depth === 0 || manager.isGameOver()) {
       return [manager.evaluate(), position];
     }
@@ -45,13 +54,24 @@ export default class MiniMaxAI extends Player {
         const srcTile = piece.tile;
         this.makeMove(move, manager);
 
-        let evaluation = this.minimax(move, depth - 1, false, manager)[0];
+        let evaluation = this.minimax(
+          move,
+          depth - 1,
+          false,
+          manager,
+          alpha,
+          beta,
+        )[0];
         // undo move
         this.undoMove(move, prevPieceValue, srcTile, manager);
 
         maxEval = Math.max(evaluation, maxEval);
         if (maxEval === evaluation) {
           bestMove = move;
+        }
+        alpha = Math.max(alpha, evaluation);
+        if (beta <= alpha) {
+          break;
         }
       }
       return [maxEval, bestMove];
@@ -68,13 +88,25 @@ export default class MiniMaxAI extends Player {
 
         this.makeMove(move, manager);
 
-        let evaluation = this.minimax(move, depth - 1, true, manager)[0];
+        let evaluation = this.minimax(
+          move,
+          depth - 1,
+          true,
+          manager,
+          alpha,
+          beta,
+        )[0];
 
         this.undoMove(move, prevPieceValue, srcTile, manager);
 
         minEval = Math.min(evaluation, minEval);
         if (minEval === evaluation) {
           bestMove = move;
+        }
+
+        beta = Math.min(beta, evaluation);
+        if (beta <= alpha) {
+          break;
         }
       }
       return [minEval, bestMove];
