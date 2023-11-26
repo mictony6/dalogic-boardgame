@@ -64,7 +64,7 @@ export class GameManager {
       this.app,
     );
     this.moveValidator = new MoveValidator(this.board);
-    this.gameMode = GameMode.AIVsAI;
+    this.gameMode = GameMode.PlayerVsAI;
     this.stateManager = new StateManager(this, "playing");
     this.inputManager = new InputManager(this, this.stateManager);
     this.eventManager = new GameEventManager();
@@ -101,10 +101,10 @@ export class GameManager {
       player2 = new Player("Player 2", 2, 0x00b0af);
     } else if (this.gameMode === GameMode.PlayerVsAI) {
       player1 = new Player("Player 1", 1, 0xaf2010);
-      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 6);
-    } else if (this.gameMode === GameMode.AIVsAI) {
-      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 8);
       player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 8);
+    } else if (this.gameMode === GameMode.AIVsAI) {
+      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 3);
+      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 3);
     }
     if (player1 && player2) {
       player1.setDirectionUp();
@@ -528,7 +528,7 @@ export class GameManager {
     const p1Score = p1.score;
     const p2Score = p2.score;
 
-    return p1Score - p2Score + (p1.ownedPieces.length - p2.ownedPieces.length);
+    return p1Score - p2Score;
   }
 
   isGameOver() {

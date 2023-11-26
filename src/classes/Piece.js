@@ -44,7 +44,8 @@ export default class Piece extends Sprite {
       this.binRep,
       new TextStyle({
         fill: 0xffffff,
-        fontSize: 24,
+        fontSize: 16,
+        align: "center",
       }),
     );
 
@@ -125,7 +126,7 @@ export default class Piece extends Sprite {
    * Display pieceValue over the piece
    */
   renderPieceValue() {
-    this.text.text = this.binRep;
+    this.text.text = `${this.binRep}\n${this.tile.operation}`;
     // Calculate the center coordinates of the circle
     const centerX = this.width / 2;
     const centerY = this.height / 2;

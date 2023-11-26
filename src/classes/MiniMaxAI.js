@@ -65,7 +65,7 @@ export default class MiniMaxAI extends Player {
         // undo move
         this.undoMove(move, prevPieceValue, srcTile, manager);
 
-        maxEval = Math.max(evaluation, maxEval);
+        maxEval = Math.max(maxEval, evaluation);
         if (maxEval === evaluation) {
           bestMove = move;
         }
@@ -99,7 +99,7 @@ export default class MiniMaxAI extends Player {
 
         this.undoMove(move, prevPieceValue, srcTile, manager);
 
-        minEval = Math.min(evaluation, minEval);
+        minEval = Math.min(minEval, evaluation);
         if (minEval === evaluation) {
           bestMove = move;
         }
