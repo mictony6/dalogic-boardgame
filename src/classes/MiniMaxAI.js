@@ -47,7 +47,7 @@ export default class MiniMaxAI extends Player {
       let maxEval = -Infinity;
       let bestMove = null;
 
-      for (let move of manager.getAllMovesForPlayer(manager.currentPlayer)) {
+      for (let move of manager.getAllMovesForPlayer(this)) {
         const prevPieceValue = move.piece.pieceValue;
 
         const piece = move.piece;
@@ -70,16 +70,16 @@ export default class MiniMaxAI extends Player {
           bestMove = move;
         }
         alpha = Math.max(alpha, evaluation);
-        if (beta <= alpha) {
-          break;
-        }
+        // if (beta <= alpha) {
+        //   break;
+        // }
       }
       return [maxEval, bestMove];
     } else {
       let minEval = Infinity;
       let bestMove = null;
 
-      let otherPlayer = manager.getOpponent(manager.currentPlayer);
+      let otherPlayer = manager.getOpponent(this);
       for (let move of manager.getAllMovesForPlayer(otherPlayer)) {
         const prevPieceValue = move.piece.pieceValue;
 
@@ -105,9 +105,9 @@ export default class MiniMaxAI extends Player {
         }
 
         beta = Math.min(beta, evaluation);
-        if (beta <= alpha) {
-          break;
-        }
+        // if (beta <= alpha) {
+        //   break;
+        // }
       }
       return [minEval, bestMove];
     }

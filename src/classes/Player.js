@@ -36,14 +36,6 @@ export default class Player {
     this.direction = 1;
   }
 
-  addMove(move) {
-    this.movesHistory.push(move);
-  }
-
-  undoMove() {
-    return this.movesHistory.pop();
-  }
-
   numberOfActivePieces() {
     return this.ownedPieces.length;
   }
