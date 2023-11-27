@@ -11,13 +11,19 @@ export default class MiniMaxAI extends Player {
   selectAITile(manager) {}
 
   perform(manager) {
+    this.iterations = 0;
+    const start = performance.now();
     const [score, bestMove] = this.minimax(null, this.depth, true, manager);
+    const end = performance.now();
+    console.log(`${this.name} did Iterations: ${this.iterations}`);
+    console.log(`Time taken by minimax: ${end - start} milliseconds`);
+  
     if (bestMove) {
       manager.selectedPiece = bestMove.piece;
       manager.selectedTile = bestMove.destTile;
       manager.currentMove = bestMove;
     } else {
-      throw Error("No more moves");
+      manager.stateManager.currentState = "switchingTurn"
     }
   }
 
@@ -37,8 +43,9 @@ export default class MiniMaxAI extends Player {
     maximizingPlayer,
     manager,
     alpha = -Infinity,
-    beta = Infinity,
+    beta = Infinity
   ) {
+    this.iterations += 1;
     if (depth === 0 || manager.isGameOver()) {
       return [manager.evaluate(), position];
     }
@@ -46,9 +53,9 @@ export default class MiniMaxAI extends Player {
     if (maximizingPlayer) {
       let maxEval = -Infinity;
       let bestMove = null;
+      const moves = manager.getAllMovesForPlayer(this);
+      for (let move of moves ) {
 
-      for (let move of manager.getAllMovesForPlayer(this)) {
-        const prevPieceValue = move.piece.pieceValue;
 
         const piece = move.piece;
         const srcTile = piece.tile;
@@ -63,16 +70,22 @@ export default class MiniMaxAI extends Player {
           beta,
         )[0];
         // undo move
-        this.undoMove(move, prevPieceValue, srcTile, manager);
+        this.undoMove(move, srcTile, manager);
 
-        maxEval = Math.max(maxEval, evaluation);
+        maxEval = Math.max(maxEval, evaluation)
+        
         if (maxEval === evaluation) {
           bestMove = move;
         }
         alpha = Math.max(alpha, evaluation);
-        // if (beta <= alpha) {
-        //   break;
-        // }
+        if (beta < alpha) {
+          console.log(`beta: ${beta} <= alpha: ${alpha}\n`);
+          return [maxEval, bestMove];
+      
+        }
+        
+
+
       }
       return [maxEval, bestMove];
     } else {
@@ -80,9 +93,9 @@ export default class MiniMaxAI extends Player {
       let bestMove = null;
 
       let otherPlayer = manager.getOpponent(this);
-      for (let move of manager.getAllMovesForPlayer(otherPlayer)) {
-        const prevPieceValue = move.piece.pieceValue;
+      const moves = manager.getAllMovesForPlayer(otherPlayer);
 
+      for (let move of moves) {
         const piece = move.piece;
         const srcTile = piece.tile;
 
@@ -97,28 +110,32 @@ export default class MiniMaxAI extends Player {
           beta,
         )[0];
 
-        this.undoMove(move, prevPieceValue, srcTile, manager);
+        this.undoMove(move, srcTile, manager);
 
         minEval = Math.min(minEval, evaluation);
+        
         if (minEval === evaluation) {
           bestMove = move;
         }
 
         beta = Math.min(beta, evaluation);
-        // if (beta <= alpha) {
-        //   break;
-        // }
+        if (beta < alpha) {
+          return [minEval, bestMove];
+          
+        }
+        
+
+
       }
       return [minEval, bestMove];
     }
   }
 
-  undoMove(move, prevPieceValue, srcTile, manager) {
+  undoMove(move, srcTile, manager) {
     const piece = move.piece;
     const capturedPiece = move.capturedPiece;
     if (move.isCaptureMove) {
-      piece.player.addScore(-piece.pieceValue);
-      piece.pieceValue = prevPieceValue;
+      piece.player.addScore(-move.points);
 
       capturedPiece.player.ownedPieces.push(capturedPiece);
       manager.board.pieces.push(capturedPiece);
@@ -147,18 +164,19 @@ export default class MiniMaxAI extends Player {
       );
 
       move.capturedPiece.player.freePiece(move.capturedPiece, manager.board);
-      piece.pieceValue = manager.performTileOperation(
+      move.points = manager.performTileOperation(
         piece.pieceValue,
         move.capturedPiece.pieceValue,
         move.destTile.operation,
       );
 
-      piece.player.addScore(piece.pieceValue);
+      piece.player.addScore(move.points);
     }
     piece.col = move.destTile.col;
     piece.row = move.destTile.row;
 
     piece.leaveCurrentTile();
+    manager.deselectPiece();
     piece.occupyTile(move.destTile);
   }
 }

@@ -1,4 +1,5 @@
 export class Move {
+  points = 0;
   constructor(piece, dest) {
     this.piece = piece;
     this.destRow = dest[0];
@@ -34,4 +35,5 @@ export class Move {
   get moveRowDiff() {
     return this.destRow - this.piece.row;
   }
+
 }

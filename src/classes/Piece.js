@@ -36,7 +36,8 @@ export default class Piece extends Sprite {
     this.binRep = "00";
     // generate random number between 0 and 3
     this.pieceValue = Math.floor(Math.random() * 4);
-
+    // this.pieceValue =3;
+    
     this.eventMode = "none";
 
     // Create text
