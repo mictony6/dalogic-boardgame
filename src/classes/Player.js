@@ -71,7 +71,7 @@ export default class Player {
    * @param move {Move}
    */
   onCapture(move) {
-    this.addScore(move.piece.pieceValue);
+    this.addScore(move.points);
     this.captureMoves.push(move);
     this.capturedPieces.push(move.capturedPiece);
   }

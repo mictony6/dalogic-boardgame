@@ -1,7 +1,8 @@
 import {Sprite, Graphics, Text, TextStyle} from 'pixi.js';
 import Operations from './Operations';
 export default class Tile extends Sprite {
-    constructor(row, col, tileSize, isBlack, app) {
+    id = 0;
+    constructor(row, col, tileSize, isBlack, id, app) {
         const textureColor = isBlack ? 0x000000 : 0xffffff; // Black or white tile
         const texture = new Graphics();
         texture.beginFill(textureColor);
@@ -20,7 +21,9 @@ export default class Tile extends Sprite {
      * @type {Piece}
      */
         this.piece = null;
-        this._operation = Operations.operations[Math.floor(Math.random() * Operations.operations.length)];
+        // this._operation = Operations.operations[Math.floor(Math.random() * Operations.operations.length)];
+        this.id = id;
+        this._operation = Operations.operations[this.id % Operations.operations.length];
 
         if (!this.isBlack){
             this.text = new Text(this.operation, new TextStyle({

@@ -41,6 +41,7 @@ export default class GameBoard extends Container {
           col,
           this.tileSize,
           (row + col) % 2 === 1,
+          (row*this.columns) + col + 1,
           this.app,
         );
         this.addChild(this.tiles[row][col]);

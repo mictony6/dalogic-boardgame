@@ -101,9 +101,9 @@ export class GameManager {
       player2 = new Player("Player 2", 2, 0x00b0af);
     } else if (this.gameMode === GameMode.PlayerVsAI) {
       player1 = new Player("Player 1", 1, 0xaf2010);
-      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 6);
+      player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 7);
     } else if (this.gameMode === GameMode.AIVsAI) {
-      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 6);
+      player1 = new MiniMaxAI("Player 1", 1, 0xaf2010, 3);
       player2 = new MiniMaxAI("Player 2", 2, 0x00b0af, 6);
     }
     if (player1 && player2) {
@@ -253,7 +253,7 @@ export class GameManager {
    */
   getAllMovesForPlayer(player) {
     const moves = [];
-    player.ownedPieces.forEach((piece) => {
+    [...player.ownedPieces].reverse().forEach((piece) => {
       moves.push(...this.getValidMoves(piece));
     });
     return moves;
@@ -500,7 +500,7 @@ export class GameManager {
       // Free the tile from the target piece
       targetPiece.leaveCurrentTile();
       // Update capturing piece and its corresponding tile locations
-      piece.pieceValue = this.performTileOperation(
+      move.points = this.performTileOperation(
         piece.pieceValue,
         targetPiece.pieceValue,
         move.destTile.operation,
@@ -528,7 +528,8 @@ export class GameManager {
     const p1Score = p1.score;
     const p2Score = p2.score;
 
-    return p1Score - p2Score;
+    let  numPieceDiff = p1.ownedPieces.length - p2.ownedPieces.length;
+    return p1Score - p2Score + (numPieceDiff*0.25);
   }
 
   isGameOver() {
